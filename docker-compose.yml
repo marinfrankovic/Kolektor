@@ -1,0 +1,73 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: kolektor-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kolektor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-kolektor}
+    volumes:
+      - ${KOLEKTOR_PGDATA:-./data/postgres}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kolektor} -d ${POSTGRES_DB:-kolektor}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      args:
+        WITH_REMBG: ${KOLEKTOR_WITH_REMBG:-false}
+    image: kolektor:latest
+    container_name: kolektor-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KOLEKTOR_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kolektor}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-kolektor}
+      KOLEKTOR_MEDIA_ROOT: /data/media
+      KOLEKTOR_SECRET_KEY: ${KOLEKTOR_SECRET_KEY:?KOLEKTOR_SECRET_KEY is required}
+      KOLEKTOR_INITIAL_USER_EMAIL: ${KOLEKTOR_INITIAL_USER_EMAIL:-}
+      KOLEKTOR_INITIAL_USER_PASSWORD: ${KOLEKTOR_INITIAL_USER_PASSWORD:-}
+      KOLEKTOR_ENABLE_OCR: ${KOLEKTOR_ENABLE_OCR:-true}
+      KOLEKTOR_OCR_LANGUAGES: ${KOLEKTOR_OCR_LANGUAGES:-eng}
+      KOLEKTOR_ENABLE_REMBG: ${KOLEKTOR_ENABLE_REMBG:-false}
+      KOLEKTOR_AUTOCROP: ${KOLEKTOR_AUTOCROP:-true}
+      KOLEKTOR_AUTOENHANCE: ${KOLEKTOR_AUTOENHANCE:-true}
+      KOLEKTOR_BEHIND_PROXY: ${KOLEKTOR_BEHIND_PROXY:-true}
+    volumes:
+      - ${KOLEKTOR_MEDIA_DIR:-./data/media}:/data/media
+    ports:
+      - "${KOLEKTOR_HTTP_PORT:-8100}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=5).status==200 else 1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  worker:
+    image: kolektor:latest
+    container_name: kolektor-worker
+    restart: unless-stopped
+    command: ["python", "-m", "app.worker"]
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+    environment:
+      KOLEKTOR_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kolektor}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-kolektor}
+      KOLEKTOR_MEDIA_ROOT: /data/media
+      KOLEKTOR_SECRET_KEY: ${KOLEKTOR_SECRET_KEY}
+      KOLEKTOR_RUN_MIGRATIONS: "false"
+      KOLEKTOR_ENABLE_OCR: ${KOLEKTOR_ENABLE_OCR:-true}
+      KOLEKTOR_OCR_LANGUAGES: ${KOLEKTOR_OCR_LANGUAGES:-eng}
+      KOLEKTOR_ENABLE_REMBG: ${KOLEKTOR_ENABLE_REMBG:-false}
+      KOLEKTOR_AUTOCROP: ${KOLEKTOR_AUTOCROP:-true}
+      KOLEKTOR_AUTOENHANCE: ${KOLEKTOR_AUTOENHANCE:-true}
+    volumes:
+      - ${KOLEKTOR_MEDIA_DIR:-./data/media}:/data/media
