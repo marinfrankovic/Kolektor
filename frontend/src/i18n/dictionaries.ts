@@ -78,6 +78,7 @@ const en = {
   "item.status.sold": "Sold",
   "item.status.missing": "Missing",
 
+  "item.section": "Item details",
   "item.title": "Title",
   "item.country": "Country",
   "item.noCountry": "No country",
@@ -222,6 +223,15 @@ const en = {
   "stats.completeness": "Average completeness",
 
   "settings.title": "Settings",
+  "settings.tab.general": "General",
+  "settings.tab.fields": "Item fields",
+  "settings.tab.access": "Access",
+  "settings.tab.about": "About",
+  "settings.saved": "Saved",
+  "settings.appearance": "Language and appearance",
+  "settings.appearance.hint":
+    "Changes menus and labels. What you typed into your items stays as it is.",
+  "settings.profile": "Your profile",
   "settings.language": "Interface language",
   "settings.language.en": "English",
   "settings.language.hr": "Croatian",
@@ -230,6 +240,16 @@ const en = {
   "settings.theme.light": "Light",
   "settings.theme.dark": "Dark",
   "settings.displayName": "Display name",
+  "settings.displayName.hint": "Shown in the top bar. Leave it empty to use your email.",
+  "settings.fields": "Fields on the item page",
+  "settings.fields.hint":
+    "Untick anything you never fill in and it disappears from the item page. Nothing is deleted, so ticking it again brings your values back.",
+  "settings.fields.shown": "{shown} of {total} shown",
+  "settings.fields.always": "Always shown",
+  "settings.fields.alwaysHint":
+    "Type, status, title, country, denomination, currency unit and year stay on every item.",
+  "settings.fields.showAll": "Show all",
+  "settings.fields.hideAll": "Hide all",
   "settings.access": "Access",
   "settings.access.password": "Password required",
   "settings.access.open": "No login",
@@ -242,6 +262,10 @@ const en = {
   "settings.newPassword": "New password",
   "settings.passwordChanged": "Password changed",
   "settings.about": "About",
+  "settings.about.signedIn": "Signed in as",
+  "settings.about.autocrop": "Automatic cropping",
+  "settings.about.maxUpload": "Largest photo",
+  "settings.about.tls": "Served over HTTPS",
 };
 
 const hr: Record<keyof typeof en, string> = {
@@ -320,6 +344,7 @@ const hr: Record<keyof typeof en, string> = {
   "item.status.sold": "Prodano",
   "item.status.missing": "Nedostaje",
 
+  "item.section": "Podaci o primjerku",
   "item.title": "Naziv",
   "item.country": "Država",
   "item.noCountry": "Bez države",
@@ -464,6 +489,15 @@ const hr: Record<keyof typeof en, string> = {
   "stats.completeness": "Prosječna popunjenost",
 
   "settings.title": "Postavke",
+  "settings.tab.general": "Općenito",
+  "settings.tab.fields": "Polja primjerka",
+  "settings.tab.access": "Pristup",
+  "settings.tab.about": "O aplikaciji",
+  "settings.saved": "Spremljeno",
+  "settings.appearance": "Jezik i izgled",
+  "settings.appearance.hint":
+    "Mijenja izbornike i nazive polja. Ono što ste upisali u primjerke ostaje kakvo jest.",
+  "settings.profile": "Vaš profil",
   "settings.language": "Jezik sučelja",
   "settings.language.en": "Engleski",
   "settings.language.hr": "Hrvatski",
@@ -472,6 +506,16 @@ const hr: Record<keyof typeof en, string> = {
   "settings.theme.light": "Svijetlo",
   "settings.theme.dark": "Tamno",
   "settings.displayName": "Prikazano ime",
+  "settings.displayName.hint": "Prikazuje se u gornjoj traci. Ostavite prazno za e-poštu.",
+  "settings.fields": "Polja na stranici primjerka",
+  "settings.fields.hint":
+    "Odznačite ono što nikad ne popunjavate i nestat će sa stranice primjerka. Ništa se ne briše pa ponovnim označavanjem vraćate svoje vrijednosti.",
+  "settings.fields.shown": "prikazano {shown} od {total}",
+  "settings.fields.always": "Uvijek prikazano",
+  "settings.fields.alwaysHint":
+    "Vrsta, status, naziv, država, nominala, valuta i godina ostaju na svakom primjerku.",
+  "settings.fields.showAll": "Prikaži sve",
+  "settings.fields.hideAll": "Sakrij sve",
   "settings.access": "Pristup",
   "settings.access.password": "Potrebna lozinka",
   "settings.access.open": "Bez prijave",
@@ -484,6 +528,10 @@ const hr: Record<keyof typeof en, string> = {
   "settings.newPassword": "Nova lozinka",
   "settings.passwordChanged": "Lozinka je promijenjena",
   "settings.about": "O aplikaciji",
+  "settings.about.signedIn": "Prijavljeni ste kao",
+  "settings.about.autocrop": "Automatsko obrezivanje",
+  "settings.about.maxUpload": "Najveća fotografija",
+  "settings.about.tls": "Posluženo preko HTTPS-a",
 };
 
 export type TranslationKey = keyof typeof en;

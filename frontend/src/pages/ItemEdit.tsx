@@ -12,6 +12,7 @@ import {
 import { useI18n, useT, type TranslationKey } from "../i18n";
 import Lightbox from "../components/Lightbox";
 import { toDisplayDate, toIsoDate } from "../lib/dates";
+import { useFieldVisibility } from "../lib/fields";
 import { HAS_CAMERA, rolesFor } from "../lib/photos";
 
 const KINDS: Kind[] = ["coin", "banknote", "token", "set", "other"];
@@ -94,6 +95,7 @@ export default function ItemEdit() {
   const { countryName } = useI18n();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { shows, groupShows } = useFieldVisibility();
 
   const itemQuery = useQuery({
     queryKey: ["item", id],
@@ -194,32 +196,34 @@ export default function ItemEdit() {
 
   if (itemQuery.isPending) return <p className="muted">{t("common.loading")}</p>;
 
-  const text = (path: string, label: string, type = "text") => (
-    <Field label={label}>
-      <input
-        type={type}
-        value={String(draft.value(path, "") ?? "")}
-        onChange={(e) => draft.set(path, e.target.value)}
-      />
-    </Field>
-  );
+  const text = (path: string, label: string, type = "text") =>
+    shows(path) ? (
+      <Field label={label}>
+        <input
+          type={type}
+          value={String(draft.value(path, "") ?? "")}
+          onChange={(e) => draft.set(path, e.target.value)}
+        />
+      </Field>
+    ) : null;
 
-  const dateField = (path: string, label: string) => (
-    <Field label={`${label} (dd/mm/yyyy)`}>
-      <input
-        inputMode="numeric"
-        placeholder="dd/mm/yyyy"
-        defaultValue={toDisplayDate(String(draft.value(path, "") ?? ""))}
-        onBlur={(e) => {
-          const typed = e.target.value.trim();
-          const iso = typed ? toIsoDate(typed) : "";
-          if (iso === null) return;
-          draft.set(path, iso);
-          e.target.value = toDisplayDate(iso);
-        }}
-      />
-    </Field>
-  );
+  const dateField = (path: string, label: string) =>
+    shows(path) ? (
+      <Field label={`${label} (dd/mm/yyyy)`}>
+        <input
+          inputMode="numeric"
+          placeholder="dd/mm/yyyy"
+          defaultValue={toDisplayDate(String(draft.value(path, "") ?? ""))}
+          onBlur={(e) => {
+            const typed = e.target.value.trim();
+            const iso = typed ? toIsoDate(typed) : "";
+            if (iso === null) return;
+            draft.set(path, iso);
+            e.target.value = toDisplayDate(iso);
+          }}
+        />
+      </Field>
+    ) : null;
 
   const photos = item?.images ?? [];
   const viewable = photos.filter((image) => image.status === "ready");
@@ -414,7 +418,7 @@ export default function ItemEdit() {
       {photosCard}
 
       <div className="card">
-        <h3>{t("collection.title")}</h3>
+        <h3>{t("item.section")}</h3>
         <div className="grid">
           <Field label={t("item.kind")}>
             <select value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
@@ -455,13 +459,14 @@ export default function ItemEdit() {
             </select>
           </Field>
 
+          {text("denomination_value", t("item.denomination"), "number")}
+          {text("currency_unit", t("item.currency"))}
+          {text("year", t("item.year"), "number")}
+
           {text("issuing_entity", t("item.issuer"))}
           {text("region", t("item.region"))}
           {text("period", t("item.period"))}
           {text("ruler", t("item.ruler"))}
-          {text("denomination_value", t("item.denomination"), "number")}
-          {text("currency_unit", t("item.currency"))}
-          {text("year", t("item.year"), "number")}
           {text("year_text", t("item.yearText"))}
           {text("series", t("item.series"))}
           {text("subject", t("item.subject"))}
@@ -476,31 +481,37 @@ export default function ItemEdit() {
           {text("barcode", t("item.barcode"))}
         </div>
 
-        <div style={{ marginTop: "0.75rem" }}>
-          <Field label={t("item.tags")}>
-            <input
-              value={(draft.value<string[]>("tags", item?.tags ?? []) as string[]).join(", ")}
-              onChange={(e) =>
-                draft.set(
-                  "tags",
-                  e.target.value
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter(Boolean),
-                )
-              }
-            />
-          </Field>
-          <Field label={t("item.notes")}>
-            <textarea
-              value={String(draft.value("notes", "") ?? "")}
-              onChange={(e) => draft.set("notes", e.target.value)}
-            />
-          </Field>
-        </div>
+        {(shows("tags") || shows("notes")) && (
+          <div style={{ marginTop: "0.75rem" }}>
+            {shows("tags") && (
+              <Field label={t("item.tags")}>
+                <input
+                  value={(draft.value<string[]>("tags", item?.tags ?? []) as string[]).join(", ")}
+                  onChange={(e) =>
+                    draft.set(
+                      "tags",
+                      e.target.value
+                        .split(",")
+                        .map((tag) => tag.trim())
+                        .filter(Boolean),
+                    )
+                  }
+                />
+              </Field>
+            )}
+            {shows("notes") && (
+              <Field label={t("item.notes")}>
+                <textarea
+                  value={String(draft.value("notes", "") ?? "")}
+                  onChange={(e) => draft.set("notes", e.target.value)}
+                />
+              </Field>
+            )}
+          </div>
+        )}
       </div>
 
-      {kind === "coin" && (
+      {kind === "coin" && groupShows("coin") && (
         <div className="card">
           <h3>{t("coin.section")}</h3>
           <div className="grid">
@@ -522,7 +533,7 @@ export default function ItemEdit() {
         </div>
       )}
 
-      {kind === "banknote" && (
+      {kind === "banknote" && groupShows("banknote") && (
         <div className="card">
           <h3>{t("note.section")}</h3>
           <div className="grid">
@@ -542,78 +553,94 @@ export default function ItemEdit() {
             {text("banknote.security_thread", t("note.thread"))}
             {text("banknote.overprint", t("note.overprint"))}
             {text("banknote.series_year", t("note.seriesYear"))}
-            <Field label={t("note.replacement")}>
-              <select
-                value={draft.value("banknote.is_replacement", false) ? "1" : "0"}
-                onChange={(e) => draft.set("banknote.is_replacement", e.target.value === "1")}
-              >
-                <option value="0">{t("common.no")}</option>
-                <option value="1">{t("common.yes")}</option>
-              </select>
-            </Field>
+            {shows("banknote.is_replacement") && (
+              <Field label={t("note.replacement")}>
+                <select
+                  value={draft.value("banknote.is_replacement", false) ? "1" : "0"}
+                  onChange={(e) => draft.set("banknote.is_replacement", e.target.value === "1")}
+                >
+                  <option value="0">{t("common.no")}</option>
+                  <option value="1">{t("common.yes")}</option>
+                </select>
+              </Field>
+            )}
           </div>
         </div>
       )}
 
-      <div className="card">
-        <h3>{t("money.acquisition")}</h3>
-        <div className="grid">
-          {dateField("acquisition.date", t("money.date"))}
-          {text("acquisition.price", t("money.price"), "number")}
-          {text("acquisition.currency", t("money.currency"))}
-          {text("acquisition.counterparty", t("money.counterparty"))}
-          {text("acquisition.place", t("money.place"))}
+      {(groupShows("acquisition") || groupShows("disposal")) && (
+        <div className="card">
+          {groupShows("acquisition") && (
+            <>
+              <h3>{t("money.acquisition")}</h3>
+              <div className="grid">
+                {dateField("acquisition.date", t("money.date"))}
+                {text("acquisition.price", t("money.price"), "number")}
+                {text("acquisition.currency", t("money.currency"))}
+                {text("acquisition.counterparty", t("money.counterparty"))}
+                {text("acquisition.place", t("money.place"))}
+              </div>
+            </>
+          )}
+          {groupShows("disposal") && (
+            <>
+              <h3 style={{ marginTop: groupShows("acquisition") ? "1rem" : 0 }}>
+                {t("money.disposal")}
+              </h3>
+              <div className="grid">
+                {dateField("disposal.date", t("money.date"))}
+                {text("disposal.price", t("money.price"), "number")}
+                {text("disposal.currency", t("money.currency"))}
+                {text("disposal.counterparty", t("money.counterparty"))}
+              </div>
+            </>
+          )}
         </div>
-        <h3 style={{ marginTop: "1rem" }}>{t("money.disposal")}</h3>
-        <div className="grid">
-          {dateField("disposal.date", t("money.date"))}
-          {text("disposal.price", t("money.price"), "number")}
-          {text("disposal.currency", t("money.currency"))}
-          {text("disposal.counterparty", t("money.counterparty"))}
-        </div>
-      </div>
+      )}
 
-      <div className="card">
-        <h3>{t("catalog.section")}</h3>
-        <div className="stack">
-          {catalogRefs.map((ref, index) => (
-            <div className="row" key={index}>
-              <input
-                style={{ flex: 1 }}
-                placeholder={t("catalog.name")}
-                value={ref.catalog}
-                onChange={(e) =>
-                  setCatalogRefs((refs) =>
-                    refs.map((r, i) => (i === index ? { ...r, catalog: e.target.value } : r)),
-                  )
-                }
-              />
-              <input
-                style={{ flex: 1 }}
-                placeholder={t("catalog.number")}
-                value={ref.number}
-                onChange={(e) =>
-                  setCatalogRefs((refs) =>
-                    refs.map((r, i) => (i === index ? { ...r, number: e.target.value } : r)),
-                  )
-                }
-              />
-              <button
-                className="ghost"
-                onClick={() => setCatalogRefs((refs) => refs.filter((_, i) => i !== index))}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          <button
-            className="ghost small"
-            onClick={() => setCatalogRefs((refs) => [...refs, { catalog: "", number: "" }])}
-          >
-            {t("action.add")}
-          </button>
+      {shows("catalog_refs") && (
+        <div className="card">
+          <h3>{t("catalog.section")}</h3>
+          <div className="stack">
+            {catalogRefs.map((ref, index) => (
+              <div className="row" key={index}>
+                <input
+                  style={{ flex: 1 }}
+                  placeholder={t("catalog.name")}
+                  value={ref.catalog}
+                  onChange={(e) =>
+                    setCatalogRefs((refs) =>
+                      refs.map((r, i) => (i === index ? { ...r, catalog: e.target.value } : r)),
+                    )
+                  }
+                />
+                <input
+                  style={{ flex: 1 }}
+                  placeholder={t("catalog.number")}
+                  value={ref.number}
+                  onChange={(e) =>
+                    setCatalogRefs((refs) =>
+                      refs.map((r, i) => (i === index ? { ...r, number: e.target.value } : r)),
+                    )
+                  }
+                />
+                <button
+                  className="ghost"
+                  onClick={() => setCatalogRefs((refs) => refs.filter((_, i) => i !== index))}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button
+              className="ghost small"
+              onClick={() => setCatalogRefs((refs) => [...refs, { catalog: "", number: "" }])}
+            >
+              {t("action.add")}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

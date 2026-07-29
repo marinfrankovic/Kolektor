@@ -315,6 +315,91 @@ button.ghost {
   margin-bottom: 0.2rem;
 }
 
+.hint {
+  margin: 0.35rem 0 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.5rem 0.85rem;
+  white-space: nowrap;
+}
+
+.tabs button:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.tabs button[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.check-grid {
+  display: grid;
+  gap: 0.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.check:hover {
+  background: var(--panel-2);
+}
+
+.check input {
+  width: auto;
+  flex: none;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.check.locked {
+  color: var(--muted);
+  cursor: default;
+}
+
+.check.locked:hover {
+  background: transparent;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
 .error {
   color: var(--danger);
   font-size: 0.9rem;

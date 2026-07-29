@@ -1,0 +1,25 @@
+# Keeping node_modules out matters: COPY frontend/ would otherwise drop host-built binaries on
+# top of the ones npm installed inside the image, and the frontend build fails with "tsc: not found".
+**/node_modules
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+
+.git
+.github
+.gitignore
+.env
+.env.*
+!.env.example
+
+data
+deploy/backups
+frontend/dist
+release-assets
+
+**/.DS_Store
+*.md
+!README.md

@@ -1,8 +1,8 @@
 # Kolektor
 
 Self-hosted manager for a coin **and paper money** collection. Runs in Docker, stores everything
-in PostgreSQL on your own machine, and works from a phone browser: photograph a coin or banknote,
-the server crops it, cleans it up, reads what text it can, and suggests fields you can accept or ignore.
+in PostgreSQL on your own machine, and works from a phone browser: photograph a coin or banknote
+and the server crops it and cleans it up for you.
 
 - Coins and banknotes are first-class, each with its own field set (weight, diameter, edge, mint
   vs Pick number, serial, signatures, watermark, security thread, printer).
@@ -15,6 +15,8 @@ the server crops it, cleans it up, reads what text it can, and suggests fields y
   and the zoom buttons, the mouse wheel or a double click magnify up to 6×. Drag to move around.
 - The collection country filter lists only the countries you own something from, plus **No country**
   for pieces you have not placed yet.
+- The item page carries around 60 fields. **Settings → Item fields** lets you untick the ones you
+  never use so the page only shows what you care about.
 - A world map shows which countries you already cover, including historical states mapped to their
   present-day successor.
 - Installable as a PWA. No Android app to sideload.
@@ -86,6 +88,20 @@ piece you photographed only from one side is easy to spot and finish.
 
 Photographing tip: plain dark background, even light, fill the frame, hold the camera parallel to
 the piece.
+
+### Choosing which fields you see
+
+A full record has around 60 fields, and most collectors use a fraction of them. **Settings → Item
+fields** lists every optional one as a checkbox, grouped the same way the item page is: item
+details, coin details, banknote details, acquisition, sale. Untick what you do not use and it
+disappears from the item page. A group whose fields are all unticked drops its whole card.
+
+Seven fields cannot be hidden, because an item without them describes nothing: **type, status,
+title, country, denomination, currency unit and year**.
+
+Hiding a field never touches your data. Anything you already typed stays in the database and comes
+back the moment you tick the box again. The choice is stored in the browser, so each device can
+show a different amount of detail.
 
 ---
 
@@ -228,7 +244,7 @@ backend/app/
 backend/tests/     pytest suite
 frontend/src/
   i18n/            English and Croatian dictionaries
-  lib/             date formatting, theme
+  lib/             date formatting, theme, item field visibility
   pages/           Setup, Login, Collection, ItemNew, ItemEdit, MapView, Stats, Settings
 deploy/            optional nginx vhost, deploy and backup scripts
 ```
