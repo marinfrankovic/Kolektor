@@ -6,6 +6,9 @@ requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# `python -m pytest` puts the working directory on sys.path but a bare `pytest` does not,
+# which is why CI could not import `app` while the same command worked locally.
+pythonpath = ["."]
 addopts = "-q --strict-markers"
 filterwarnings = ["ignore::DeprecationWarning"]
 
