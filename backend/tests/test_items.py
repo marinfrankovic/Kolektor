@@ -150,6 +150,12 @@ class TestListing:
         create_coin(auth_client)
         assert auth_client.get("/api/items", params={"country": "hr"}).json()["total"] == 1
 
+    def test_filter_by_missing_country(self, auth_client):
+        create_coin(auth_client)
+        auth_client.post("/api/items", json={"kind": "coin", "title": "Unplaced"})
+        rows = auth_client.get("/api/items", params={"country": "none"}).json()["rows"]
+        assert [r["title"] for r in rows] == ["Unplaced"]
+
     def test_filter_by_year_range(self, auth_client):
         create_coin(auth_client, year=1900)
         create_coin(auth_client, year=2000)

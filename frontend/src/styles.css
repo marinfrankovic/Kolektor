@@ -478,7 +478,7 @@ button.ghost {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 1rem;
+  padding: 1rem 1rem 4.5rem;
   background: #000000e0;
 }
 
@@ -492,11 +492,18 @@ button.ghost {
   gap: 0.6rem;
 }
 
+.lightbox-stage {
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
 .lightbox img {
   max-width: 100%;
-  max-height: calc(100vh - 6rem);
+  max-height: calc(100vh - 9rem);
   object-fit: contain;
-  border-radius: var(--radius);
+  touch-action: none;
+  user-select: none;
 }
 
 .lightbox figcaption {
@@ -533,6 +540,95 @@ button.ghost {
 .lightbox-nav:hover,
 .lightbox-close:hover {
   background: #ffffff33;
+}
+
+.lightbox-zoom {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid #ffffff40;
+  border-radius: 999px;
+  background: #00000099;
+}
+
+.lightbox-zoom button {
+  min-width: 2.25rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #f2efe9;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lightbox-zoom button.level {
+  min-width: 3.5rem;
+  font-size: 0.8rem;
+}
+
+.lightbox-zoom button:hover:not(:disabled) {
+  background: #ffffff26;
+}
+
+.lightbox-zoom button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* --- searchable select ---------------------------------------------- */
+
+.combo {
+  position: relative;
+}
+
+.combo input {
+  width: 100%;
+}
+
+.combo-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.2rem);
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.2rem;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 0 12px 28px #00000026;
+}
+
+.combo-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+}
+
+.combo-list li.active {
+  background: var(--accent-soft);
+}
+
+.combo-list li[aria-selected="true"] {
+  font-weight: 600;
+}
+
+.combo-list li.empty {
+  cursor: default;
 }
 
 /* --- add item wizard ------------------------------------------------ */

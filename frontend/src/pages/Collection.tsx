@@ -46,7 +46,7 @@ function ItemCard({ row }: { row: ItemRow }) {
 
 export default function Collection() {
   const t = useT();
-  const { formatNumber } = useI18n();
+  const { formatNumber, countryName } = useI18n();
 
   const [q, setQ] = useState("");
   const [kind, setKind] = useState("");
@@ -56,9 +56,8 @@ export default function Collection() {
   const [page, setPage] = useState(1);
 
   const countries = useQuery({
-    queryKey: ["countries"],
-    queryFn: api.countries,
-    staleTime: Infinity,
+    queryKey: ["countries", "used"],
+    queryFn: () => api.countries(true),
   });
 
   const items = useQuery({
@@ -146,9 +145,10 @@ export default function Collection() {
               }}
             >
               <option value="">{t("common.all")}</option>
+              <option value="none">{t("item.noCountry")}</option>
               {(countries.data ?? []).map((c) => (
                 <option key={c.code2} value={c.code2}>
-                  {c.name}
+                  {countryName(c.code2) || c.name}
                 </option>
               ))}
             </select>

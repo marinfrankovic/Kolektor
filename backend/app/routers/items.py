@@ -137,7 +137,10 @@ def list_items(
     if status_filter:
         stmt = stmt.where(Item.status == status_filter)
     if country:
-        stmt = stmt.where(Item.map_country_code == country.upper())
+        if country.lower() == "none":
+            stmt = stmt.where(Item.map_country_code.is_(None))
+        else:
+            stmt = stmt.where(Item.map_country_code == country.upper())
     if year_from is not None:
         stmt = stmt.where(Item.year >= year_from)
     if year_to is not None:

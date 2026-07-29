@@ -81,6 +81,8 @@ const en = {
 
   "item.title": "Title",
   "item.country": "Country",
+  "item.noCountry": "No country",
+  "country.search": "Type to search",
   "item.mapCountry": "Country on map",
   "item.issuer": "Issuing entity",
   "item.region": "Region",
@@ -183,6 +185,9 @@ const en = {
   "images.previous": "Previous photo",
   "images.next": "Next photo",
   "images.close": "Close",
+  "images.zoomIn": "Zoom in",
+  "images.zoomOut": "Zoom out",
+  "images.zoomReset": "Fit to screen",
 
   "new.title": "Add an item",
   "new.stepPhotos": "Photos",
@@ -332,6 +337,8 @@ const hr: Record<keyof typeof en, string> = {
 
   "item.title": "Naziv",
   "item.country": "Država",
+  "item.noCountry": "Bez države",
+  "country.search": "Upišite za pretraživanje",
   "item.mapCountry": "Država na karti",
   "item.issuer": "Izdavatelj",
   "item.region": "Regija",
@@ -434,6 +441,9 @@ const hr: Record<keyof typeof en, string> = {
   "images.previous": "Prethodna fotografija",
   "images.next": "Sljedeća fotografija",
   "images.close": "Zatvori",
+  "images.zoomIn": "Povećaj",
+  "images.zoomOut": "Smanji",
+  "images.zoomReset": "Prilagodi zaslonu",
 
   "new.title": "Novi primjerak",
   "new.stepPhotos": "Fotografije",

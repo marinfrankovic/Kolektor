@@ -105,6 +105,15 @@ class TestReference:
         assert len(countries) == 249
         assert {"code2", "code3", "name", "continent"} <= set(countries[0])
 
+    def test_used_countries_are_limited_to_the_collection(self, auth_client):
+        add(auth_client, country_code="HR")
+        add(auth_client, country_code="HR")
+        countries = auth_client.get("/api/reference/countries", params={"used": True}).json()
+        assert [c["code2"] for c in countries] == ["HR"]
+
+    def test_used_countries_are_empty_without_items(self, auth_client):
+        assert auth_client.get("/api/reference/countries", params={"used": True}).json() == []
+
     def test_historical_entities_are_available(self, auth_client):
         entities = auth_client.get("/api/reference/historical-entities").json()
         names = {entity["name"] for entity in entities}

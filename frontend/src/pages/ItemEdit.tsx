@@ -148,7 +148,7 @@ export default function ItemEdit() {
 
   const countries = useQuery({
     queryKey: ["countries"],
-    queryFn: api.countries,
+    queryFn: () => api.countries(),
     staleTime: Infinity,
   });
 

@@ -3,7 +3,8 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, ApiError, type ImageRole, type Kind } from "../api/client";
 import { BLUR_THRESHOLD, blurScore } from "../lib/blur";
-import { useI18n, useT, type TranslationKey } from "../i18n";
+import { useT, type TranslationKey } from "../i18n";
+import CountryPicker from "../components/CountryPicker";
 
 type Photo = { file: File; preview: string } | { url: string };
 
@@ -118,7 +119,6 @@ function PhotoSlot({
 
 export default function ItemNew() {
   const t = useT();
-  const { countryName } = useI18n();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -140,7 +140,7 @@ export default function ItemNew() {
 
   const countries = useQuery({
     queryKey: ["countries"],
-    queryFn: api.countries,
+    queryFn: () => api.countries(),
     staleTime: Infinity,
   });
 
@@ -177,6 +177,7 @@ export default function ItemNew() {
     onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ["items"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["countries"] });
       navigate(`/items/${id}`, { replace: true });
     },
     onError: (err) => {
@@ -254,14 +255,12 @@ export default function ItemNew() {
             </div>
             <div>
               <label htmlFor="n-country">{t("item.country")}</label>
-              <select id="n-country" value={country} onChange={(e) => setCountry(e.target.value)}>
-                <option value="">{t("common.unknown")}</option>
-                {(countries.data ?? []).map((c) => (
-                  <option key={c.code2} value={c.code2}>
-                    {countryName(c.code2) || c.name}
-                  </option>
-                ))}
-              </select>
+              <CountryPicker
+                id="n-country"
+                value={country}
+                countries={countries.data ?? []}
+                onChange={setCountry}
+              />
             </div>
             <div>
               <label htmlFor="n-currency">{t("item.currency")}</label>

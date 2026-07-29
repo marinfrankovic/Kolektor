@@ -11,7 +11,10 @@ the server crops it, cleans it up, reads what text it can, and suggests fields y
 - Photos come from the camera, a file on your computer, or a link you paste.
 - Photos are auto-cropped and deskewed. The original file is never modified, and no colour or
   sharpness processing is applied unless you turn `KOLEKTOR_AUTOENHANCE` on.
-- Click a photo on the item page to open it full size; ‹ › or the arrow keys step through the rest.
+- Click a photo on the item page to open it full size; ‹ › or the arrow keys step through the rest,
+  and the zoom buttons, the mouse wheel or a double click magnify up to 6×. Drag to move around.
+- The collection country filter lists only the countries you own something from, plus **No country**
+  for pieces you have not placed yet.
 - OCR proposes year, denomination, currency and serial numbers. Nothing is written without you.
 - A world map shows which countries you already cover, including historical states mapped to their
   present-day successor.
@@ -65,8 +68,9 @@ The **＋** tab opens a two-step form.
 1. **Photos.** Every item carries at least two: obverse and reverse for a coin, face and back for
    a note. Each slot takes a camera shot, a file from the computer, or a pasted image URL. A blur
    check runs in the browser first, so a soft photo is flagged before it is uploaded.
-2. **Details.** Name, country, currency, nominal value. Year is there too but you can leave it
-   empty. Save, and the item opens with everything else ready to fill in whenever you feel like it.
+2. **Details.** Name, country, currency, nominal value. The country field filters as you type, so
+   you never scroll a list of 249. Year is there too but you can leave it empty. Save, and the item
+   opens with everything else ready to fill in whenever you feel like it.
 
 On a phone, open the app in the browser and choose **Add to home screen**; it installs as a PWA
 and the same form uses the camera directly. Photos taken while offline are stored in the browser
@@ -161,7 +165,7 @@ headers).
 ```bash
 cd backend
 python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pytest              # 239 tests
+.venv/bin/pytest              # 242 tests
 .venv/bin/ruff check .
 .venv/bin/bandit -c pyproject.toml -r app
 .venv/bin/pip-audit -r requirements.txt

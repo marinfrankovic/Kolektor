@@ -274,5 +274,6 @@ export const api = {
 
   mapStats: () => request<MapStats>("/api/stats/map"),
   summary: () => request<CollectionStats>("/api/stats/summary"),
-  countries: () => request<Country[]>("/api/reference/countries"),
+  countries: (used = false) =>
+    request<Country[]>(`/api/reference/countries${used ? "?used=true" : ""}`),
 };
