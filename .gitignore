@@ -16,5 +16,6 @@ media/
 *.tar.gz
 frontend/dev-dist/
 frontend/public/geo/
+*.tsbuildinfo
 .coverage
 htmlcov/
