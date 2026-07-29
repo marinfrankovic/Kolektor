@@ -8,7 +8,6 @@ const en = {
   "nav.collection": "Collection",
   "nav.map": "Map",
   "nav.stats": "Statistics",
-  "nav.add": "Add item",
   "nav.settings": "Settings",
   "nav.logout": "Sign out",
 
@@ -17,6 +16,7 @@ const en = {
   "action.cancel": "Cancel",
   "action.delete": "Delete",
   "action.add": "Add",
+  "action.addItem": "Add item",
   "action.back": "Back",
   "action.retry": "Try again",
   "action.confirmDelete": "Delete this permanently?",
@@ -58,7 +58,6 @@ const en = {
   "collection.title": "Collection",
   "collection.empty": "Nothing here yet. Add your first piece.",
   "collection.search": "Search",
-  "collection.new": "New item",
   "collection.results": "{count} items",
   "collection.filters": "Filters",
   "collection.clearFilters": "Clear filters",
@@ -190,7 +189,6 @@ const en = {
   "images.zoomOut": "Zoom out",
   "images.zoomReset": "Fit to screen",
 
-  "new.title": "Add an item",
   "new.stepPhotos": "Photos",
   "new.stepDetails": "Details",
   "new.photosHint":
@@ -252,7 +250,6 @@ const hr: Record<keyof typeof en, string> = {
   "nav.collection": "Zbirka",
   "nav.map": "Karta",
   "nav.stats": "Statistika",
-  "nav.add": "Novi primjerak",
   "nav.settings": "Postavke",
   "nav.logout": "Odjava",
 
@@ -261,6 +258,7 @@ const hr: Record<keyof typeof en, string> = {
   "action.cancel": "Odustani",
   "action.delete": "Obriši",
   "action.add": "Dodaj",
+  "action.addItem": "Dodaj primjerak",
   "action.back": "Natrag",
   "action.retry": "Pokušaj ponovno",
   "action.confirmDelete": "Trajno obrisati?",
@@ -302,7 +300,6 @@ const hr: Record<keyof typeof en, string> = {
   "collection.title": "Zbirka",
   "collection.empty": "Još nema ničega. Dodajte prvi primjerak.",
   "collection.search": "Pretraži",
-  "collection.new": "Novi primjerak",
   "collection.results": "{count} primjeraka",
   "collection.filters": "Filtri",
   "collection.clearFilters": "Očisti filtre",
@@ -434,7 +431,6 @@ const hr: Record<keyof typeof en, string> = {
   "images.zoomOut": "Smanji",
   "images.zoomReset": "Prilagodi zaslonu",
 
-  "new.title": "Novi primjerak",
   "new.stepPhotos": "Fotografije",
   "new.stepDetails": "Podaci",
   "new.photosHint":

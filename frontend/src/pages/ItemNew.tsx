@@ -180,7 +180,7 @@ export default function ItemNew() {
   return (
     <div className="stack">
       <div className="spread">
-        <h1>{t("new.title")}</h1>
+        <h1>{t("action.addItem")}</h1>
         <button className="ghost" onClick={() => navigate("/")}>
           {t("action.back")}
         </button>

@@ -1,4 +1,7 @@
 # Optional background-removal fallback for auto-crop. Enabled with build arg WITH_REMBG=true.
 # Adds roughly 1 GB to the image because of onnxruntime plus model weights.
-rembg==2.0.59
-onnxruntime==1.20.1
+# rembg pulls pymatting -> numba, which caps numpy below 2.5. Pinning it here keeps that
+# downgrade of requirements.txt visible instead of letting pip do it quietly.
+numpy==2.4.6
+rembg==2.0.77
+onnxruntime==1.28.0

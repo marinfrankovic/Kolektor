@@ -62,7 +62,7 @@ function Chrome({ showLogout }: { showLogout: boolean }) {
 
   const links = [
     { to: "/", label: t("nav.collection"), icon: "▣", end: true },
-    { to: "/items/new", label: t("nav.add"), icon: "＋" },
+    { to: "/items/new", label: t("action.addItem"), icon: "＋" },
     { to: "/map", label: t("nav.map"), icon: "◍" },
     { to: "/stats", label: t("nav.stats"), icon: "▤" },
     { to: "/settings", label: t("nav.settings"), icon: "⚙" },

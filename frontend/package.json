@@ -13,7 +13,7 @@
     "d3-geo": "^3.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.1",
+    "react-router-dom": "^7.18.2",
     "react-simple-maps": "^3.0.0",
     "topojson-client": "^3.1.0"
   },
@@ -32,5 +32,9 @@
   },
   "allowScripts": {
     "esbuild@0.25.12": true
+  },
+  "overrides": {
+    "d3-color": "^3.1.0",
+    "brace-expansion": "^5.0.8"
   }
 }

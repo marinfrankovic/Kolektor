@@ -81,7 +81,7 @@ export default function Collection() {
       <div className="spread">
         <h1>{t("collection.title")}</h1>
         <Link to="/items/new">
-          <button className="primary">{t("collection.new")}</button>
+          <button className="primary">{t("action.addItem")}</button>
         </Link>
       </div>
 
