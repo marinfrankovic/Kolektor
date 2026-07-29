@@ -1,0 +1,28 @@
+[project]
+name = "kolektor"
+version = "0.1.0"
+description = "Self-hosted coin and banknote collection manager"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/worker.py"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "S", "C4", "SIM"]
+ignore = ["B008", "S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106", "S311"]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
