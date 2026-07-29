@@ -248,6 +248,103 @@ export default function ItemEdit() {
     </Field>
   );
 
+  const photosCard = (
+    <div className="card">
+      <h3>{t("images.section")}</h3>
+      <div className="thumbs">
+        {(item?.images ?? []).map((image) => (
+          <figure key={image.id}>
+            {image.status === "ready" ? (
+              <a href={api.imageUrl(image.id, "display")} target="_blank" rel="noreferrer">
+                <img src={api.imageUrl(image.id, "preview")} alt={image.role} loading="lazy" />
+              </a>
+            ) : (
+              <div
+                className="muted small"
+                style={{ aspectRatio: 1, display: "grid", placeItems: "center" }}
+              >
+                {image.status === "failed" ? t("images.failed") : t("images.pending")}
+              </div>
+            )}
+            <figcaption>
+              <select
+                value={image.role}
+                onChange={(e) =>
+                  api
+                    .updateImage(image.id, { role: e.target.value as ImageRole })
+                    .then(() => queryClient.invalidateQueries({ queryKey: ["item", id] }))
+                }
+              >
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {t(`images.role.${role}` as TranslationKey)}
+                  </option>
+                ))}
+              </select>
+              <div className="row" style={{ marginTop: "0.3rem" }}>
+                <button
+                  className="ghost small"
+                  onClick={() => imageAction.mutate({ action: "reprocess", imageId: image.id })}
+                >
+                  ↻
+                </button>
+                <a
+                  className="small"
+                  href={api.imageUrl(image.id, "original")}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t("images.original")}
+                </a>
+                <button
+                  className="ghost small"
+                  onClick={() =>
+                    window.confirm(t("action.confirmDelete")) &&
+                    imageAction.mutate({ action: "delete", imageId: image.id })
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <div className="row" style={{ marginTop: "0.75rem" }}>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) upload.mutate({ file, role: roles[0] });
+            e.target.value = "";
+          }}
+        />
+        {upload.isPending && <span className="muted small">{t("images.uploading")}</span>}
+      </div>
+      <div className="row" style={{ marginTop: "0.5rem" }}>
+        <input
+          style={{ flex: 1 }}
+          type="url"
+          inputMode="url"
+          placeholder={t("images.urlPlaceholder")}
+          value={photoUrl}
+          onChange={(e) => setPhotoUrl(e.target.value)}
+        />
+        <button
+          className="ghost small"
+          disabled={!photoUrl.trim() || importFromUrl.isPending}
+          onClick={() => {
+            setError("");
+            importFromUrl.mutate({ url: photoUrl.trim(), role: roles[0] });
+          }}
+        >
+          {importFromUrl.isPending ? t("images.uploading") : t("images.addLink")}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="stack">
       <div className="spread">
@@ -269,6 +366,8 @@ export default function ItemEdit() {
       </div>
 
       {error && <p className="error">{error}</p>}
+
+      {photosCard}
 
       {item && item.warnings.length > 0 && (
         <div className="card small muted">
@@ -485,97 +584,6 @@ export default function ItemEdit() {
             {t("action.add")}
           </button>
         </div>
-      </div>
-
-      <div className="card">
-        <h3>{t("images.section")}</h3>
-        <div className="row">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) upload.mutate({ file, role: roles[0] });
-              e.target.value = "";
-            }}
-          />
-          {upload.isPending && <span className="muted small">{t("images.uploading")}</span>}
-        </div>
-        <div className="row" style={{ marginTop: "0.5rem" }}>
-          <input
-            style={{ flex: 1 }}
-            type="url"
-            inputMode="url"
-            placeholder={t("images.urlPlaceholder")}
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-          />
-          <button
-            className="ghost small"
-            disabled={!photoUrl.trim() || importFromUrl.isPending}
-            onClick={() => {
-              setError("");
-              importFromUrl.mutate({ url: photoUrl.trim(), role: roles[0] });
-            }}
-          >
-            {importFromUrl.isPending ? t("images.uploading") : t("images.addLink")}
-          </button>
-        </div>
-
-          <div className="thumbs" style={{ marginTop: "0.75rem" }}>
-            {(item?.images ?? []).map((image) => (
-              <figure key={image.id}>
-                {image.status === "ready" ? (
-                  <a href={api.imageUrl(image.id, "display")} target="_blank" rel="noreferrer">
-                    <img src={api.imageUrl(image.id, "preview")} alt={image.role} loading="lazy" />
-                  </a>
-                ) : (
-                  <div
-                    className="muted small"
-                    style={{ aspectRatio: 1, display: "grid", placeItems: "center" }}
-                  >
-                    {image.status === "failed" ? t("images.failed") : t("images.pending")}
-                  </div>
-                )}
-                <figcaption>
-                  <select
-                    value={image.role}
-                    onChange={(e) =>
-                      api
-                        .updateImage(image.id, { role: e.target.value as ImageRole })
-                        .then(() => queryClient.invalidateQueries({ queryKey: ["item", id] }))
-                    }
-                  >
-                    {roles.map((role) => (
-                      <option key={role} value={role}>
-                        {t(`images.role.${role}` as TranslationKey)}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="row" style={{ marginTop: "0.3rem" }}>
-                    <button
-                      className="ghost small"
-                      onClick={() => imageAction.mutate({ action: "reprocess", imageId: image.id })}
-                    >
-                      ↻
-                    </button>
-                    <a className="small" href={api.imageUrl(image.id, "original")} target="_blank" rel="noreferrer">
-                      {t("images.original")}
-                    </a>
-                    <button
-                      className="ghost small"
-                      onClick={() =>
-                        window.confirm(t("action.confirmDelete")) &&
-                        imageAction.mutate({ action: "delete", imageId: image.id })
-                      }
-                    >
-                      ×
-                    </button>
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
       </div>
     </div>
   );
