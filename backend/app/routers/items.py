@@ -21,6 +21,7 @@ from app.models import (
 )
 from app.schemas import ItemCreate, ItemListRow, ItemOut, ItemPage, ItemUpdate
 from app.services import build_title, collect_warnings, compute_completeness
+from app.storage import purge_item_dir
 
 router = APIRouter(prefix="/api/items", tags=["items"], dependencies=[Depends(current_user)])
 
@@ -202,6 +203,8 @@ def delete_item(item_id: uuid.UUID, db: Session = Depends(get_db)) -> None:
     item = _loaded(db, item_id)
     db.delete(item)
     db.commit()
+    # Only after the rows are gone, so a failed commit cannot orphan the DB from its files.
+    purge_item_dir(item_id)
 
 
 @router.get("/{item_id}/similar", response_model=list[ItemListRow])

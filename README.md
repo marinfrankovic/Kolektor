@@ -30,6 +30,10 @@ docker compose up -d --build
 Open `http://<host-ip>:8100`. That is the whole installation. A custom domain, HTTPS and a
 reverse proxy are all optional extras, covered further down.
 
+If you point `KOLEKTOR_MEDIA_DIR` at a directory you created yourself, hand it to the container
+user first (`chown -R 10001:10001 <dir>`), otherwise uploads fail with a permission error.
+`deploy/deploy.sh` does this for you.
+
 ### First run: password or no login
 
 The first time you open the app it asks how you want to open it from then on:
@@ -141,9 +145,10 @@ SQL injection, rate limiting, session handling, security headers).
 ```bash
 cd backend
 python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pytest              # 215 tests
+.venv/bin/pytest              # 220 tests
 .venv/bin/ruff check .
 .venv/bin/bandit -c pyproject.toml -r app
+.venv/bin/pip-audit -r requirements.txt
 ```
 
 On Windows use `.venv\Scripts\pytest.exe`.

@@ -4,6 +4,7 @@ back from the DB is re-validated against that root before it is opened or served
 from __future__ import annotations
 
 import hashlib
+import shutil
 import uuid
 from pathlib import Path
 
@@ -46,6 +47,19 @@ def item_dir(item_id: uuid.UUID) -> Path:
 
 def relative(path: Path) -> str:
     return path.resolve().relative_to(media_root()).as_posix()
+
+
+def purge_item_dir(item_id: uuid.UUID) -> None:
+    """Drop every file an item owns once the item itself is gone."""
+    key = str(item_id)
+    root = media_root()
+    path = (root / key[:2] / key).resolve()
+    if not path.is_relative_to(root) or not path.is_dir():
+        return
+    shutil.rmtree(path, ignore_errors=True)
+    parent = path.parent
+    if parent != root and parent.is_dir() and not any(parent.iterdir()):
+        parent.rmdir()
 
 
 def resolve(rel_path: str) -> Path:

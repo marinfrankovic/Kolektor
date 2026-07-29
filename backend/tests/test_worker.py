@@ -159,3 +159,48 @@ class TestImageProcessing:
         image = db.get(ItemImage, uuid.UUID(image_id))
         assert image.status == "ready"
         assert image.phash != first
+
+
+class TestServingImages:
+    def test_every_variant_is_downloadable(self, auth_client, db):
+        image_id = _upload(auth_client)
+        run_once(db)
+        for variant in ("thumb", "preview", "display"):
+            response = auth_client.get(f"/api/images/{image_id}/{variant}")
+            assert response.status_code == 200, variant
+            assert len(response.content) > 0
+
+    def test_the_untouched_original_is_downloadable(self, auth_client, db):
+        image_id = _upload(auth_client)
+        run_once(db)
+        response = auth_client.get(f"/api/images/{image_id}/original")
+        assert response.status_code == 200
+        assert response.content.startswith(b"\xff\xd8")
+
+    def test_an_unknown_variant_is_rejected(self, auth_client, db):
+        image_id = _upload(auth_client)
+        run_once(db)
+        assert auth_client.get(f"/api/images/{image_id}/huge").status_code == 404
+
+    def test_serving_needs_a_session(self, auth_client, db):
+        image_id = _upload(auth_client)
+        run_once(db)
+        auth_client.cookies.clear()
+        assert auth_client.get(f"/api/images/{image_id}/thumb").status_code == 401
+        assert auth_client.get(f"/api/images/{image_id}/original").status_code == 401
+
+    def test_deleting_an_item_removes_its_files(self, auth_client, db):
+        from app.storage import media_root
+
+        item = auth_client.post("/api/items", json={"kind": "coin", "country_code": "HR"}).json()
+        auth_client.post(
+            "/api/images",
+            data={"item_id": item["id"], "role": "obverse"},
+            files={"file": ("coin.jpg", encode_jpeg(coin_photo()), "image/jpeg")},
+        )
+        run_once(db)
+        folder = media_root() / item["id"][:2] / item["id"]
+        assert list(folder.glob("*.jpg"))
+
+        assert auth_client.delete(f"/api/items/{item['id']}").status_code == 204
+        assert not folder.exists()

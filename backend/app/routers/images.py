@@ -85,6 +85,19 @@ async def upload_image(
     return image
 
 
+@router.get("/{image_id}/original")
+def get_original(image_id: uuid.UUID, db: Session = Depends(get_db)) -> FileResponse:
+    image = _get_image(db, image_id)
+    try:
+        path = resolve(image.original_path)
+    except ValueError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid media path") from None
+    if not path.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "file missing")
+    return FileResponse(path, headers={"Cache-Control": "private, max-age=86400"})
+
+
+# Declared after /original so that the literal path wins over this catch-all.
 @router.get("/{image_id}/{variant}")
 def get_variant(
     image_id: uuid.UUID,
@@ -103,18 +116,6 @@ def get_variant(
     if not path.is_file():
         raise HTTPException(status.HTTP_404_NOT_FOUND, "file missing")
 
-    return FileResponse(path, headers={"Cache-Control": "private, max-age=86400"})
-
-
-@router.get("/{image_id}/original")
-def get_original(image_id: uuid.UUID, db: Session = Depends(get_db)) -> FileResponse:
-    image = _get_image(db, image_id)
-    try:
-        path = resolve(image.original_path)
-    except ValueError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid media path") from None
-    if not path.is_file():
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "file missing")
     return FileResponse(path, headers={"Cache-Control": "private, max-age=86400"})
 
 

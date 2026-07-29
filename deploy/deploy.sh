@@ -17,6 +17,16 @@ if [[ "$(stat -c %a .env)" != "600" ]]; then
     chmod 600 .env
 fi
 
+# The container runs as uid 10001, so a bind-mounted media directory has to be
+# writable by that uid. Docker named volumes inherit the image owner already.
+media_dir="$(grep -E '^KOLEKTOR_MEDIA_DIR=' .env | cut -d= -f2- || true)"
+media_dir="${media_dir:-./data/media}"
+mkdir -p "$media_dir"
+if [[ "$(stat -c %u "$media_dir")" != "10001" ]]; then
+    echo "Handing $media_dir to the container user (uid 10001)"
+    chown -R 10001:10001 "$media_dir"
+fi
+
 if [[ "${1:-}" == "--no-build" ]]; then
     docker compose up -d
 else
