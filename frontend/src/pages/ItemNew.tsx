@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, ApiError, type ImageRole, type Kind } from "../api/client";
 import { BLUR_THRESHOLD, blurScore } from "../lib/blur";
@@ -8,6 +8,12 @@ import { useI18n, useT, type TranslationKey } from "../i18n";
 type Photo = { file: File; preview: string } | { url: string };
 
 const KINDS: Kind[] = ["coin", "banknote", "token", "set", "other"];
+
+// `capture` only means anything on a device with a real camera; on a desktop it would just be a
+// second file dialog. `navigator.mediaDevices` is no help here because it is undefined over plain
+// HTTP, which is how a LAN install is served.
+const HAS_CAMERA =
+  typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
 function rolesFor(kind: Kind): [ImageRole, ImageRole] {
   return kind === "banknote" ? ["face", "back"] : ["obverse", "reverse"];
@@ -24,12 +30,22 @@ function PhotoSlot({
 }) {
   const t = useT();
   const input = useRef<HTMLInputElement>(null);
+  const camera = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState("");
   const [broken, setBroken] = useState(false);
 
   const choose = async (file: File) => {
     if ((await blurScore(file)) < BLUR_THRESHOLD && !window.confirm(t("images.blurry"))) return;
     onPick({ file, preview: URL.createObjectURL(file) });
+  };
+
+  const take = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBroken(false);
+      choose(file);
+    }
+    e.target.value = "";
   };
 
   const source = photo && ("file" in photo ? photo.preview : photo.url);
@@ -45,23 +61,28 @@ function PhotoSlot({
         )}
       </div>
 
-      <input
-        ref={input}
-        type="file"
-        accept="image/*"
-        hidden
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setBroken(false);
-            choose(file);
-          }
-          e.target.value = "";
-        }}
-      />
+      <input ref={input} type="file" accept="image/*" hidden onChange={take} />
+      {HAS_CAMERA && (
+        <input
+          ref={camera}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+          onChange={take}
+        />
+      )}
 
       <div className="row">
-        <button className={photo ? "ghost small" : "small"} onClick={() => input.current?.click()}>
+        {HAS_CAMERA && (
+          <button className="small" onClick={() => camera.current?.click()}>
+            {t("new.camera")}
+          </button>
+        )}
+        <button
+          className={photo || HAS_CAMERA ? "ghost small" : "small"}
+          onClick={() => input.current?.click()}
+        >
           {photo ? t("new.replace") : t("new.choose")}
         </button>
         {photo && (
