@@ -7,8 +7,10 @@ venv/
 node_modules/
 dist/
 build/
-data/
-media/
+# Anchored: an unanchored data/ also matched backend/app/data, which kept the country
+# tables out of the repository entirely.
+/data/
+/media/
 *.log
 .DS_Store
 .pytest_cache/
