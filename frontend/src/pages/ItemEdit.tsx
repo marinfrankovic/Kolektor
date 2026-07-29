@@ -11,6 +11,7 @@ import {
   type Suggestion,
 } from "../api/client";
 import { useI18n, useT, type TranslationKey } from "../i18n";
+import Lightbox from "../components/Lightbox";
 import { toDisplayDate, toIsoDate } from "../lib/dates";
 
 const KINDS: Kind[] = ["coin", "banknote", "token", "set", "other"];
@@ -160,6 +161,7 @@ export default function ItemEdit() {
   const draft = useDraft(item, kind);
   const [catalogRefs, setCatalogRefs] = useState<CatalogRef[]>([]);
   const [photoUrl, setPhotoUrl] = useState("");
+  const [lightbox, setLightbox] = useState<number | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -248,16 +250,23 @@ export default function ItemEdit() {
     </Field>
   );
 
+  const photos = item?.images ?? [];
+  const viewable = photos.filter((image) => image.status === "ready");
+
   const photosCard = (
     <div className="card">
       <h3>{t("images.section")}</h3>
       <div className="thumbs">
-        {(item?.images ?? []).map((image) => (
+        {photos.map((image) => (
           <figure key={image.id}>
             {image.status === "ready" ? (
-              <a href={api.imageUrl(image.id, "display")} target="_blank" rel="noreferrer">
+              <button
+                className="thumb-open"
+                aria-label={t(`images.role.${image.role}` as TranslationKey)}
+                onClick={() => setLightbox(viewable.findIndex((other) => other.id === image.id))}
+              >
                 <img src={api.imageUrl(image.id, "preview")} alt={image.role} loading="lazy" />
-              </a>
+              </button>
             ) : (
               <div
                 className="muted small"
@@ -281,23 +290,29 @@ export default function ItemEdit() {
                   </option>
                 ))}
               </select>
-              <div className="row" style={{ marginTop: "0.3rem" }}>
+              <div className="thumb-actions">
                 <button
-                  className="ghost small"
+                  className="icon"
+                  title={t("images.reprocess")}
+                  aria-label={t("images.reprocess")}
                   onClick={() => imageAction.mutate({ action: "reprocess", imageId: image.id })}
                 >
                   ↻
                 </button>
                 <a
-                  className="small"
+                  className="icon"
+                  title={t("images.original")}
+                  aria-label={t("images.original")}
                   href={api.imageUrl(image.id, "original")}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {t("images.original")}
+                  ⤓
                 </a>
                 <button
-                  className="ghost small"
+                  className="icon danger"
+                  title={t("action.delete")}
+                  aria-label={t("action.delete")}
                   onClick={() =>
                     window.confirm(t("action.confirmDelete")) &&
                     imageAction.mutate({ action: "delete", imageId: image.id })
@@ -347,6 +362,15 @@ export default function ItemEdit() {
 
   return (
     <div className="stack">
+      {lightbox !== null && viewable[lightbox] && (
+        <Lightbox
+          images={viewable}
+          index={lightbox}
+          onIndex={setLightbox}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+
       <div className="spread">
         <h1>{item?.title}</h1>
         <div className="row">

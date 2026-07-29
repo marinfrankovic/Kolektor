@@ -180,6 +180,9 @@ const en = {
   "images.urlPlaceholder": "https://example.com/coin.jpg",
   "images.addLink": "Fetch",
   "images.linkFailed": "That link could not be used",
+  "images.previous": "Previous photo",
+  "images.next": "Next photo",
+  "images.close": "Close",
 
   "new.title": "Add an item",
   "new.stepPhotos": "Photos",
@@ -428,6 +431,9 @@ const hr: Record<keyof typeof en, string> = {
   "images.urlPlaceholder": "https://primjer.com/kovanica.jpg",
   "images.addLink": "Dohvati",
   "images.linkFailed": "Poveznicu nije bilo moguće upotrijebiti",
+  "images.previous": "Prethodna fotografija",
+  "images.next": "Sljedeća fotografija",
+  "images.close": "Zatvori",
 
   "new.title": "Novi primjerak",
   "new.stepPhotos": "Fotografije",

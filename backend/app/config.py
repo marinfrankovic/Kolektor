@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     jpeg_quality: int = 90
 
     autocrop: bool = True
-    autoenhance: bool = True
+    autoenhance: bool = False
     enable_rembg: bool = False
     enable_ocr: bool = True
     ocr_languages: str = "eng"

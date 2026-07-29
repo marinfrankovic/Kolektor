@@ -9,7 +9,9 @@ the server crops it, cleans it up, reads what text it can, and suggests fields y
 - Adding an item takes two steps: front and back photo, then five fields. Everything else is
   optional and can be filled in later on the item page.
 - Photos come from the camera, a file on your computer, or a link you paste.
-- Photos are auto-cropped, deskewed and enhanced. The original file is never modified.
+- Photos are auto-cropped and deskewed. The original file is never modified, and no colour or
+  sharpness processing is applied unless you turn `KOLEKTOR_AUTOENHANCE` on.
+- Click a photo on the item page to open it full size; ‹ › or the arrow keys step through the rest.
 - OCR proposes year, denomination, currency and serial numbers. Nothing is written without you.
 - A world map shows which countries you already cover, including historical states mapped to their
   present-day successor.
@@ -70,9 +72,10 @@ On a phone, open the app in the browser and choose **Add to home screen**; it in
 and the same form uses the camera directly. Photos taken while offline are stored in the browser
 and uploaded when the connection returns.
 
-The server crops the coin or note out of the background, straightens it, adjusts white balance and
-contrast, and generates thumbnail, preview and display sizes plus a perceptual hash. Any OCR
-guesses appear at the top of the item as suggestions. Accept the ones you want.
+The server crops the coin or note out of the background, straightens it, and generates thumbnail,
+preview and display sizes plus a perceptual hash. Colours and sharpness are left alone unless you
+set `KOLEKTOR_AUTOENHANCE=true`. Any OCR guesses appear at the top of the item as suggestions.
+Accept the ones you want.
 
 Photographing tip: plain dark background, even light, fill the frame, hold the camera parallel to
 the piece.
@@ -94,7 +97,8 @@ Everything lives in `.env`. The defaults are chosen for a LAN install.
 | `KOLEKTOR_MEDIA_DIR` | `./data/media` | Where photos live on the host. |
 | `KOLEKTOR_ENABLE_OCR` | `true` | Turn OCR suggestions on or off. |
 | `KOLEKTOR_OCR_LANGUAGES` | `eng` | Tesseract language string, e.g. `eng+hrv+deu`. |
-| `KOLEKTOR_AUTOCROP` / `KOLEKTOR_AUTOENHANCE` | `true` | Automatic crop and image clean-up. |
+| `KOLEKTOR_AUTOCROP` | `true` | Crop the piece out of the background. |
+| `KOLEKTOR_AUTOENHANCE` | `false` | White balance, denoise and contrast. Off by default: a cropped photo of a coin usually looks more honest than a processed one. |
 | `KOLEKTOR_WITH_REMBG` | `false` | Build arg. Adds an ML background remover (~300 MB, slower). |
 | `KOLEKTOR_BEHIND_PROXY` | `false` | Trust `X-Forwarded-*` headers. |
 | `KOLEKTOR_COOKIE_SECURE` | `false` | HTTPS-only cookies. Also enables HSTS. |

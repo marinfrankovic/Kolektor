@@ -13,6 +13,7 @@
   --ok: #46a758;
   --image-bg: #0d1116;
   --tooltip-bg: #000c;
+  --tooltip-text: #f2efe9;
   --map-bg: #151d26;
   --map-empty: #26303c;
   --map-line: #12181f;
@@ -35,6 +36,7 @@
   --ok: #2f7a3d;
   --image-bg: #e7e4dc;
   --tooltip-bg: #23282eee;
+  --tooltip-text: #f5f3ef;
   --map-bg: #e7e4dc;
   --map-empty: #cdc9bf;
   --map-line: #f4f2ee;
@@ -418,6 +420,119 @@ button.ghost {
 .thumbs figcaption {
   padding: 0.35rem 0.4rem;
   font-size: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.thumbs figcaption select {
+  width: 100%;
+}
+
+.thumb-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.thumb-actions {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.thumb-actions .icon {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.thumb-actions .icon:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.thumb-actions .icon.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* --- lightbox ------------------------------------------------------- */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #000000e0;
+}
+
+.lightbox figure {
+  margin: 0;
+  max-width: min(1200px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: calc(100vh - 6rem);
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+.lightbox figcaption {
+  color: #f2efe9;
+  font-size: 0.85rem;
+}
+
+.lightbox-nav,
+.lightbox-close {
+  border: 1px solid #ffffff40;
+  border-radius: 999px;
+  background: #ffffff1a;
+  color: #f2efe9;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.lightbox-nav {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.8rem;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.4rem;
+}
+
+.lightbox-nav:hover,
+.lightbox-close:hover {
+  background: #ffffff33;
 }
 
 /* --- add item wizard ------------------------------------------------ */
@@ -534,6 +649,7 @@ button.ghost {
   position: fixed;
   pointer-events: none;
   background: var(--tooltip-bg);
+  color: var(--tooltip-text);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.3rem 0.5rem;
