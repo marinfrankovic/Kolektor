@@ -141,7 +141,9 @@ export default function ItemEdit() {
     queryFn: () => api.getItem(id!),
     enabled: !isNew,
     refetchInterval: (query) =>
-      query.state.data?.images.some((image) => image.status === "pending") ? 2500 : false,
+      query.state.data?.images.some((image) => image.status === "pending" || image.status === "processing")
+        ? 2500
+        : false,
   });
 
   const countries = useQuery({
@@ -488,7 +490,7 @@ export default function ItemEdit() {
                     className="muted small"
                     style={{ aspectRatio: 1, display: "grid", placeItems: "center" }}
                   >
-                    {image.status === "pending" ? t("images.pending") : t("images.failed")}
+                    {image.status === "failed" ? t("images.failed") : t("images.pending")}
                   </div>
                 )}
                 <figcaption>

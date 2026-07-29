@@ -57,7 +57,7 @@ export type ItemImage = {
   id: string;
   role: ImageRole;
   sort: number;
-  status: "pending" | "ready" | "failed";
+  status: "pending" | "processing" | "ready" | "failed";
   width: number | null;
   height: number | null;
   phash: string | null;

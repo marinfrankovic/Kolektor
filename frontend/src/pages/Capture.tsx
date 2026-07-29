@@ -79,6 +79,8 @@ export default function Capture() {
     onSuccess: (itemId) => {
       queryClient.invalidateQueries({ queryKey: ["items"] });
       if (itemId) {
+        // Stay pointed at this piece so the next shot is its other side, not a new item.
+        setTarget(itemId);
         setStatus(t("capture.done"));
         navigate(`/items/${itemId}`);
       }
