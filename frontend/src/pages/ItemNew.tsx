@@ -3,22 +3,13 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, ApiError, type ImageRole, type Kind } from "../api/client";
 import { BLUR_THRESHOLD, blurScore } from "../lib/blur";
+import { HAS_CAMERA, rolesFor } from "../lib/photos";
 import { useT, type TranslationKey } from "../i18n";
 import CountryPicker from "../components/CountryPicker";
 
 type Photo = { file: File; preview: string } | { url: string };
 
 const KINDS: Kind[] = ["coin", "banknote", "token", "set", "other"];
-
-// `capture` only means anything on a device with a real camera; on a desktop it would just be a
-// second file dialog. `navigator.mediaDevices` is no help here because it is undefined over plain
-// HTTP, which is how a LAN install is served.
-const HAS_CAMERA =
-  typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
-
-function rolesFor(kind: Kind): [ImageRole, ImageRole] {
-  return kind === "banknote" ? ["face", "back"] : ["obverse", "reverse"];
-}
 
 function PhotoSlot({
   label,

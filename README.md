@@ -15,7 +15,6 @@ the server crops it, cleans it up, reads what text it can, and suggests fields y
   and the zoom buttons, the mouse wheel or a double click magnify up to 6×. Drag to move around.
 - The collection country filter lists only the countries you own something from, plus **No country**
   for pieces you have not placed yet.
-- OCR proposes year, denomination, currency and serial numbers. Nothing is written without you.
 - A world map shows which countries you already cover, including historical states mapped to their
   present-day successor.
 - Installable as a PWA. No Android app to sideload.
@@ -78,8 +77,12 @@ and uploaded when the connection returns.
 
 The server crops the coin or note out of the background, straightens it, and generates thumbnail,
 preview and display sizes plus a perceptual hash. Colours and sharpness are left alone unless you
-set `KOLEKTOR_AUTOENHANCE=true`. Any OCR guesses appear at the top of the item as suggestions.
-Accept the ones you want.
+set `KOLEKTOR_AUTOENHANCE=true`.
+
+On the item page each photo has a **⟳ Retake** button that shoots or picks a replacement and keeps
+the same role; the old file is only deleted once the new one has uploaded. If an item is missing
+its obverse or reverse (face or back for a note) a dashed **＋** slot appears in its place, so a
+piece you photographed only from one side is easy to spot and finish.
 
 Photographing tip: plain dark background, even light, fill the frame, hold the camera parallel to
 the piece.
@@ -99,8 +102,6 @@ Everything lives in `.env`. The defaults are chosen for a LAN install.
 | `KOLEKTOR_DEFAULT_LANGUAGE` | `en` | `en` or `hr`. Only the starting language; each user setting wins. |
 | `KOLEKTOR_PGDATA` | `./data/postgres` | Where the database files live on the host. |
 | `KOLEKTOR_MEDIA_DIR` | `./data/media` | Where photos live on the host. |
-| `KOLEKTOR_ENABLE_OCR` | `true` | Turn OCR suggestions on or off. |
-| `KOLEKTOR_OCR_LANGUAGES` | `eng` | Tesseract language string, e.g. `eng+hrv+deu`. |
 | `KOLEKTOR_AUTOCROP` | `true` | Crop the piece out of the background. |
 | `KOLEKTOR_AUTOENHANCE` | `false` | White balance, denoise and contrast. Off by default: a cropped photo of a coin usually looks more honest than a processed one. |
 | `KOLEKTOR_WITH_REMBG` | `false` | Build arg. Adds an ML background remover (~300 MB, slower). |
@@ -132,6 +133,24 @@ If your nginx runs in a container, keep the `resolver 127.0.0.11;` line and the 
 from the sample config. Without them nginx resolves the app container's IP once at startup and
 starts returning 502 the first time you recreate the app.
 
+A containerised nginx also has to share a Docker network with the app, otherwise it cannot resolve
+`kolektor-app` at all. Add the proxy's network to the `app` service and declare it as external:
+
+```yaml
+  app:
+    networks:
+      - default
+      - proxy_net
+
+networks:
+  default:
+  proxy_net:
+    external: true
+```
+
+Note that `KOLEKTOR_COOKIE_SECURE=true` makes the session cookie HTTPS-only, so signing in over
+plain `http://<host-ip>:8100` stops working. Use the domain from then on.
+
 With a password-protected instance exposed to the internet, also consider putting an
 authentication proxy in front of it.
 
@@ -157,7 +176,7 @@ gunzip -c kolektor-20260101-0230.sql.gz | docker exec -i kolektor-db psql -U kol
 
 ## Tests
 
-The suite covers services, the API, authentication and the first-run modes, imaging, OCR parsing,
+The suite covers services, the API, authentication and the first-run modes, imaging,
 statistics, the worker, remote image fetching, and a dedicated set of security tests (path
 traversal, upload sniffing, SSRF, SQL injection, rate limiting, session handling, security
 headers).
@@ -165,7 +184,7 @@ headers).
 ```bash
 cd backend
 python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pytest              # 242 tests
+.venv/bin/pytest              # 203 tests
 .venv/bin/ruff check .
 .venv/bin/bandit -c pyproject.toml -r app
 .venv/bin/pip-audit -r requirements.txt
@@ -204,7 +223,7 @@ backend/app/
   fetching.py      Guarded download of images the user linked to
   seed.py          Countries, historical entities, optional first user
   worker.py        Polls the job table, processes images
-  imaging/         detect, enhance, ocr, pipeline
+  imaging/         detect, enhance, pipeline
   routers/         auth, items, images, stats, reference
 backend/tests/     pytest suite
 frontend/src/

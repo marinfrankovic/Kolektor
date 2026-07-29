@@ -1,4 +1,4 @@
-"""Derived values: display title, completeness score and soft validation warnings."""
+"""Derived values: display title and completeness score."""
 
 from __future__ import annotations
 
@@ -66,33 +66,3 @@ def compute_completeness(item: Item) -> int:
         score += COMPLETENESS_WEIGHTS["catalog"]
 
     return max(0, min(100, score))
-
-
-def collect_warnings(item: Item) -> list[str]:
-    """Advisory only. Nothing here blocks a save."""
-    warnings: list[str] = []
-
-    if not item.country_code and not item.issuing_entity:
-        warnings.append("missing_country")
-    if item.denomination_value is None and not item.denomination_text:
-        warnings.append("missing_denomination")
-    if not item.year and not item.year_text:
-        warnings.append("missing_year")
-    if not item.images:
-        warnings.append("no_images")
-
-    if item.status == "sold":
-        disposal = item.disposal
-        if not disposal or (not disposal.date and disposal.price is None):
-            warnings.append("sold_without_disposal")
-
-    if item.kind == "coin":
-        coin = item.coin
-        if not coin or (coin.weight_g is None and coin.diameter_mm is None):
-            warnings.append("coin_without_measurements")
-    elif item.kind == "banknote":
-        note = item.banknote
-        if not note or (not note.pick_number and not note.serial_number):
-            warnings.append("banknote_without_pick_or_serial")
-
-    return warnings

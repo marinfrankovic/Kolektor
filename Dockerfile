@@ -16,19 +16,10 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
-# libglib2.0-0 is required by opencv-python-headless; tesseract packs drive OCR suggestions.
+# libglib2.0-0 is required by opencv-python-headless.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libglib2.0-0 \
         libgomp1 \
-        tesseract-ocr \
-        tesseract-ocr-eng \
-        tesseract-ocr-hrv \
-        tesseract-ocr-deu \
-        tesseract-ocr-fra \
-        tesseract-ocr-ita \
-        tesseract-ocr-spa \
-        tesseract-ocr-rus \
-        tesseract-ocr-script-cyrl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

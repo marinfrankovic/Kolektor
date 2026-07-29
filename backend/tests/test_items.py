@@ -74,11 +74,6 @@ class TestCreate:
         )
         assert len(body["catalog_refs"]) == 2
 
-    def test_warnings_are_returned_with_the_item(self, auth_client):
-        body = auth_client.post("/api/items", json={"kind": "coin"}).json()
-        assert "missing_country" in body["warnings"]
-        assert "no_images" in body["warnings"]
-
     def test_completeness_improves_with_more_data(self, auth_client):
         sparse = auth_client.post("/api/items", json={"kind": "coin"}).json()
         rich = create_coin(auth_client, grade_value="XF")

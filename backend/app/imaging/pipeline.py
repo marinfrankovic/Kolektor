@@ -13,7 +13,6 @@ from PIL import Image, ImageOps
 from app.config import get_settings
 from app.imaging import detect as detect_mod
 from app.imaging import enhance as enhance_mod
-from app.imaging import ocr as ocr_mod
 
 Image.MAX_IMAGE_PIXELS = 200_000_000
 
@@ -71,13 +70,11 @@ def process_image(
     *,
     autocrop: bool | None = None,
     autoenhance: bool | None = None,
-    run_ocr: bool | None = None,
     manual_transform: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     settings = get_settings()
     autocrop = settings.autocrop if autocrop is None else autocrop
     autoenhance = settings.autoenhance if autoenhance is None else autoenhance
-    run_ocr = settings.enable_ocr if run_ocr is None else run_ocr
 
     source = load_oriented_bgr(original_path, settings.max_source_megapixels)
     transform: dict[str, Any] = {"source_size": [source.shape[1], source.shape[0]]}
@@ -120,14 +117,9 @@ def process_image(
     _write_jpeg(preview, preview_path, settings.jpeg_quality)
     _write_jpeg(thumb, thumb_path, 82)
 
-    suggestions: list[dict[str, Any]] = []
-    if run_ocr and ocr_mod.tesseract_available():
-        suggestions, _ = ocr_mod.suggest_fields(preview, kind, settings.ocr_languages)
-
     return {
         "detection": detection.to_dict(),
         "transform": transform,
-        "suggestions": suggestions,
         "display_path": display_path,
         "preview_path": preview_path,
         "thumb_path": thumb_path,

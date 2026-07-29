@@ -437,6 +437,24 @@ button.ghost {
   cursor: zoom-in;
 }
 
+.thumb-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px dashed var(--line);
+  background: var(--image-bg);
+  color: var(--muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.thumb-empty:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .thumb-actions {
   display: flex;
   gap: 0.3rem;

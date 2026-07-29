@@ -158,7 +158,6 @@ class ImageOut(ORMModel):
     phash: str | None = None
     transform: dict[str, Any] = {}
     detection: dict[str, Any] = {}
-    suggestions: list[dict[str, Any]] = []
     error: str | None = None
     created_at: datetime
 
@@ -244,7 +243,6 @@ class ItemOut(ItemBase, ORMModel):
     disposal: MoneyEventOut | None = None
     catalog_refs: list[CatalogRefOut] = []
     images: list[ImageOut] = []
-    warnings: list[str] = []
 
 
 class ItemListRow(ORMModel):

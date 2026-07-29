@@ -34,8 +34,6 @@ class Settings(BaseSettings):
     autocrop: bool = True
     autoenhance: bool = False
     enable_rembg: bool = False
-    enable_ocr: bool = True
-    ocr_languages: str = "eng"
 
     worker_poll_seconds: float = 2.0
     worker_max_attempts: int = 3

@@ -79,7 +79,6 @@ def handle_process_image(db: Session, payload: dict) -> None:
     image.phash = result["phash"]
     image.detection = result["detection"]
     image.transform = result["transform"]
-    image.suggestions = result["suggestions"]
     image.status = "ready"
     image.error = None
     image.processed_at = datetime.now(UTC)

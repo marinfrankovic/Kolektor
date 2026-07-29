@@ -1,4 +1,4 @@
-"""Detection, enhancement and hashing. No network, no tesseract binary required."""
+"""Detection, enhancement and hashing. No network required."""
 
 from __future__ import annotations
 
@@ -157,7 +157,7 @@ class TestPipeline:
         source.write_bytes(encode_jpeg(coin_photo()))
 
         result = process_image(
-            source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True, run_ocr=False
+            source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True
         )
 
         for key in ("display_path", "preview_path", "thumb_path"):
@@ -169,7 +169,7 @@ class TestPipeline:
         source = tmp_path / "coin.jpg"
         source.write_bytes(encode_jpeg(coin_photo()))
         result = process_image(
-            source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True, run_ocr=False
+            source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True
         )
 
         def side(path) -> int:
@@ -182,14 +182,14 @@ class TestPipeline:
         source = tmp_path / "coin.jpg"
         payload = encode_jpeg(coin_photo())
         source.write_bytes(payload)
-        process_image(source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True, run_ocr=False)
+        process_image(source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True)
         assert source.read_bytes() == payload
 
     def test_autocrop_can_be_switched_off(self, tmp_path):
         source = tmp_path / "coin.jpg"
         source.write_bytes(encode_jpeg(coin_photo(700)))
         result = process_image(
-            source, tmp_path, "abc", "coin", autocrop=False, autoenhance=False, run_ocr=False
+            source, tmp_path, "abc", "coin", autocrop=False, autoenhance=False
         )
         assert "crop" not in result["transform"]
         assert result["width"] == 700
@@ -205,7 +205,6 @@ class TestPipeline:
             "coin",
             autocrop=True,
             autoenhance=False,
-            run_ocr=False,
             manual_transform=manual,
         )
         assert result["width"] <= 270
@@ -218,7 +217,7 @@ class TestPipeline:
         Image.fromarray(coin_photo()[:, :, ::-1]).save(source, format="JPEG", exif=exif)
 
         result = process_image(
-            source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True, run_ocr=False
+            source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True
         )
         with Image.open(result["preview_path"]) as img:
             assert not img.getexif().get_ifd(0x8825)
@@ -228,7 +227,7 @@ class TestPipeline:
         source.write_bytes(b"\xff\xd8\xff\xe0 not really a jpeg")
         with pytest.raises((ValueError, OSError)):
             process_image(
-                source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True, run_ocr=False
+                source, tmp_path, "abc", "coin", autocrop=True, autoenhance=True
             )
 
     def test_png_with_alpha_is_handled(self, tmp_path):
@@ -238,6 +237,6 @@ class TestPipeline:
         Image.fromarray(rgba[:, :, [2, 1, 0, 3]], mode="RGBA").save(buffer, format="PNG")
         source.write_bytes(buffer.getvalue())
         result = process_image(
-            source, tmp_path, "abc", "coin", autocrop=False, autoenhance=False, run_ocr=False
+            source, tmp_path, "abc", "coin", autocrop=False, autoenhance=False
         )
         assert result["width"] > 0

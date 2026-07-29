@@ -78,7 +78,6 @@ def public_config() -> dict[str, object]:
     return {
         "languages": ["en", "hr"],
         "default_language": settings.default_language,
-        "ocr_enabled": settings.enable_ocr,
         "autocrop": settings.autocrop,
         "autoenhance": settings.autoenhance,
         "max_upload_mb": settings.max_upload_mb,

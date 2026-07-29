@@ -172,7 +172,8 @@ const en = {
   "images.role.other": "Other",
   "images.pending": "Processing…",
   "images.failed": "Processing failed",
-  "images.reprocess": "Process again",
+  "images.retake": "Retake",
+  "images.addPhoto": "Add photo",
   "images.original": "Original",
   "images.uploading": "Uploading…",
   "images.blurry": "This photo looks blurry. Use it anyway?",
@@ -205,11 +206,6 @@ const en = {
   "new.creating": "Adding…",
   "new.uploadFailed": "The item was saved but a photo did not upload. Add it again below.",
   "new.yearOptional": "Year (optional)",
-
-  "suggestions.title": "Suggestions from the photo",
-  "suggestions.hint": "Nothing is filled in until you accept it.",
-  "suggestions.accept": "Use",
-  "suggestions.dismiss": "Dismiss",
 
   "map.title": "World map",
   "map.covered": "{covered} of {total} countries",
@@ -248,14 +244,6 @@ const en = {
   "settings.newPassword": "New password",
   "settings.passwordChanged": "Password changed",
   "settings.about": "About",
-
-  "warning.missing_country": "No country set",
-  "warning.missing_denomination": "No denomination set",
-  "warning.missing_year": "No year set",
-  "warning.no_images": "No photos yet",
-  "warning.sold_without_disposal": "Marked sold but no sale recorded",
-  "warning.coin_without_measurements": "No weight or diameter",
-  "warning.banknote_without_pick_or_serial": "No Pick number or serial",
 };
 
 const hr: Record<keyof typeof en, string> = {
@@ -428,7 +416,8 @@ const hr: Record<keyof typeof en, string> = {
   "images.role.other": "Ostalo",
   "images.pending": "Obrada…",
   "images.failed": "Obrada nije uspjela",
-  "images.reprocess": "Obradi ponovno",
+  "images.retake": "Ponovno slikaj",
+  "images.addPhoto": "Dodaj fotografiju",
   "images.original": "Original",
   "images.uploading": "Slanje…",
   "images.blurry": "Fotografija izgleda mutno. Želite je ipak upotrijebiti?",
@@ -461,11 +450,6 @@ const hr: Record<keyof typeof en, string> = {
   "new.creating": "Dodavanje…",
   "new.uploadFailed": "Primjerak je spremljen, ali fotografija nije poslana. Dodajte je ponovno niže.",
   "new.yearOptional": "Godina (nije obavezno)",
-
-  "suggestions.title": "Prijedlozi s fotografije",
-  "suggestions.hint": "Ništa se ne upisuje dok ne prihvatite.",
-  "suggestions.accept": "Prihvati",
-  "suggestions.dismiss": "Odbaci",
 
   "map.title": "Karta svijeta",
   "map.covered": "{covered} od {total} država",
@@ -504,14 +488,6 @@ const hr: Record<keyof typeof en, string> = {
   "settings.newPassword": "Nova lozinka",
   "settings.passwordChanged": "Lozinka je promijenjena",
   "settings.about": "O aplikaciji",
-
-  "warning.missing_country": "Država nije postavljena",
-  "warning.missing_denomination": "Nominala nije postavljena",
-  "warning.missing_year": "Godina nije postavljena",
-  "warning.no_images": "Još nema fotografija",
-  "warning.sold_without_disposal": "Označeno kao prodano, ali prodaja nije upisana",
-  "warning.coin_without_measurements": "Nema mase ni promjera",
-  "warning.banknote_without_pick_or_serial": "Nema Pick broja ni serijskog broja",
 };
 
 export type TranslationKey = keyof typeof en;

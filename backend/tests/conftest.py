@@ -23,7 +23,6 @@ os.environ["KOLEKTOR_STATIC_ROOT"] = str(TEST_ROOT / "static-does-not-exist")
 os.environ["KOLEKTOR_SECRET_KEY"] = "unit-test-secret-key-not-for-production"
 os.environ["KOLEKTOR_INITIAL_USER_EMAIL"] = TEST_EMAIL
 os.environ["KOLEKTOR_INITIAL_USER_PASSWORD"] = TEST_PASSWORD
-os.environ["KOLEKTOR_ENABLE_OCR"] = "false"
 os.environ["KOLEKTOR_ENABLE_REMBG"] = "false"
 os.environ["KOLEKTOR_COOKIE_SECURE"] = "false"
 os.environ["KOLEKTOR_BEHIND_PROXY"] = "false"

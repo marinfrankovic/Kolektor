@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from app.models import Acquisition, CatalogRef, Disposal, Item, ItemBanknote, ItemCoin, ItemImage
-from app.services import build_title, collect_warnings, compute_completeness
+from app.models import Acquisition, CatalogRef, Item, ItemImage
+from app.services import build_title, compute_completeness
 
 
 def _item(**kwargs) -> Item:
@@ -75,41 +75,3 @@ class TestCompleteness:
     def test_partial_identity_scores_partially(self):
         item = _item(country_code="HR", year=1994)
         assert 0 < compute_completeness(item) < 30
-
-
-class TestWarnings:
-    def test_flags_everything_missing(self):
-        warnings = collect_warnings(_item())
-        assert "missing_country" in warnings
-        assert "missing_denomination" in warnings
-        assert "missing_year" in warnings
-        assert "no_images" in warnings
-
-    def test_sold_without_disposal_is_flagged(self):
-        item = _item(status="sold")
-        assert "sold_without_disposal" in collect_warnings(item)
-
-    def test_sold_with_disposal_is_clean(self):
-        item = _item(status="sold")
-        item.disposal = Disposal(price=Decimal("50"))
-        assert "sold_without_disposal" not in collect_warnings(item)
-
-    def test_coin_without_measurements(self):
-        assert "coin_without_measurements" in collect_warnings(_item())
-
-    def test_coin_with_weight_only_is_accepted(self):
-        item = _item()
-        item.coin = ItemCoin(weight_g=Decimal("5.5"))
-        assert "coin_without_measurements" not in collect_warnings(item)
-
-    def test_banknote_without_pick_or_serial(self):
-        item = _item(kind="banknote")
-        assert "banknote_without_pick_or_serial" in collect_warnings(item)
-
-    def test_banknote_with_pick_is_accepted(self):
-        item = _item(kind="banknote")
-        item.banknote = ItemBanknote(pick_number="P-29")
-        assert "banknote_without_pick_or_serial" not in collect_warnings(item)
-
-    def test_warnings_are_advisory_not_exceptions(self):
-        assert isinstance(collect_warnings(_item()), list)

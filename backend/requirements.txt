@@ -11,4 +11,3 @@ argon2-cffi==23.1.0
 pillow==12.3.0
 numpy==2.5.1
 opencv-python-headless==5.0.0.93
-pytesseract==0.3.13

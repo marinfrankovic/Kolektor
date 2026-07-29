@@ -39,18 +39,10 @@ export type SetupStatus = {
 export type PublicConfig = {
   languages: Language[];
   default_language: Language;
-  ocr_enabled: boolean;
   autocrop: boolean;
   autoenhance: boolean;
   max_upload_mb: number;
   tls_terminated: boolean;
-};
-
-export type Suggestion = {
-  field: string;
-  value: string | number;
-  confidence: number;
-  source: string;
 };
 
 export type ItemImage = {
@@ -63,7 +55,6 @@ export type ItemImage = {
   phash: string | null;
   transform: Record<string, unknown>;
   detection: Record<string, unknown>;
-  suggestions: Suggestion[];
   error: string | null;
   created_at: string;
 };
@@ -107,7 +98,6 @@ export type Item = {
   tags: string[];
   extra: Record<string, unknown>;
   completeness: number;
-  warnings: string[];
   coin: Coin | null;
   banknote: Banknote | null;
   acquisition: MoneyEvent | null;

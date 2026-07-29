@@ -195,8 +195,8 @@ export default function Settings() {
         <div>Kolektor</div>
         {config.data && (
           <div>
-            OCR: {config.data.ocr_enabled ? t("common.yes") : t("common.no")} · auto-crop:{" "}
-            {config.data.autocrop ? t("common.yes") : t("common.no")} · max upload:{" "}
+            auto-crop: {config.data.autocrop ? t("common.yes") : t("common.no")} · max upload:{" "}
+            {config.data.max_upload_mb} MB · TLS:{" "}
             {config.data.max_upload_mb} MB · TLS:{" "}
             {config.data.tls_terminated ? t("common.yes") : t("common.no")}
           </div>

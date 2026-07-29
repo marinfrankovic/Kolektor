@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   api,
@@ -8,11 +8,11 @@ import {
   type ImageRole,
   type Item,
   type Kind,
-  type Suggestion,
 } from "../api/client";
 import { useI18n, useT, type TranslationKey } from "../i18n";
 import Lightbox from "../components/Lightbox";
 import { toDisplayDate, toIsoDate } from "../lib/dates";
+import { HAS_CAMERA, rolesFor } from "../lib/photos";
 
 const KINDS: Kind[] = ["coin", "banknote", "token", "set", "other"];
 const STATUSES = [
@@ -86,48 +86,6 @@ function useDraft(item: Item | undefined, kind: Kind) {
   };
 
   return { value, set, payload, dirty: Object.keys(draft).length > 0, reset: () => setDraft({}) };
-}
-
-function SuggestionList({
-  suggestions,
-  onAccept,
-}: {
-  suggestions: Suggestion[];
-  onAccept: (field: string, value: string | number) => void;
-}) {
-  const t = useT();
-  const [dismissed, setDismissed] = useState<string[]>([]);
-  const visible = suggestions.filter((s) => !dismissed.includes(`${s.field}:${s.value}`));
-
-  if (visible.length === 0) return null;
-
-  return (
-    <div className="card">
-      <h3>{t("suggestions.title")}</h3>
-      <p className="muted small">{t("suggestions.hint")}</p>
-      <div className="stack">
-        {visible.map((s) => (
-          <div className="spread" key={`${s.field}:${s.value}`}>
-            <span className="small">
-              <code>{s.field}</code> → <strong>{String(s.value)}</strong>{" "}
-              <span className="muted">({Math.round(s.confidence * 100)}%)</span>
-            </span>
-            <span className="row">
-              <button className="small" onClick={() => onAccept(s.field, s.value)}>
-                {t("suggestions.accept")}
-              </button>
-              <button
-                className="ghost small"
-                onClick={() => setDismissed((d) => [...d, `${s.field}:${s.value}`])}
-              >
-                {t("suggestions.dismiss")}
-              </button>
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export default function ItemEdit() {
@@ -209,17 +167,30 @@ export default function ItemEdit() {
   });
 
   const imageAction = useMutation({
-    mutationFn: async ({ action, imageId }: { action: "reprocess" | "delete"; imageId: string }) =>
-      action === "reprocess" ? api.reprocessImage(imageId) : api.deleteImage(imageId),
+    mutationFn: async (imageId: string) => api.deleteImage(imageId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["item", id] }),
   });
 
-  const roles = kind === "banknote" ? NOTE_ROLES : COIN_ROLES;
+  // Upload first, delete second, so a failed upload never costs you the photo you already had.
+  const retake = useMutation({
+    mutationFn: async ({
+      file,
+      role,
+      replaces,
+    }: {
+      file: File;
+      role: ImageRole;
+      replaces?: string;
+    }) => {
+      await api.uploadImage(id, role, file, file.name);
+      if (replaces) await api.deleteImage(replaces);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["item", id] }),
+    onError: (err) =>
+      setError(err instanceof ApiError ? String(err.detail ?? err.message) : t("common.error")),
+  });
 
-  const suggestions = useMemo(
-    () => (item?.images ?? []).flatMap((image) => image.suggestions ?? []),
-    [item],
-  );
+  const roles = kind === "banknote" ? NOTE_ROLES : COIN_ROLES;
 
   if (itemQuery.isPending) return <p className="muted">{t("common.loading")}</p>;
 
@@ -252,6 +223,39 @@ export default function ItemEdit() {
 
   const photos = item?.images ?? [];
   const viewable = photos.filter((image) => image.status === "ready");
+  const missingRoles = rolesFor(kind).filter(
+    (role) => !photos.some((image) => image.role === role),
+  );
+
+  const pickFile = (
+    key: string,
+    label: string,
+    role: ImageRole,
+    replaces: string | undefined,
+    className: string,
+    children: React.ReactNode,
+  ) => (
+    <>
+      <label className={className} htmlFor={key} title={label} aria-label={label}>
+        {children}
+      </label>
+      <input
+        id={key}
+        type="file"
+        accept="image/*"
+        {...(HAS_CAMERA ? { capture: "environment" as const } : {})}
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            setError("");
+            retake.mutate({ file, role, replaces });
+          }
+          e.target.value = "";
+        }}
+      />
+    </>
+  );
 
   const photosCard = (
     <div className="card">
@@ -291,14 +295,14 @@ export default function ItemEdit() {
                 ))}
               </select>
               <div className="thumb-actions">
-                <button
-                  className="icon"
-                  title={t("images.reprocess")}
-                  aria-label={t("images.reprocess")}
-                  onClick={() => imageAction.mutate({ action: "reprocess", imageId: image.id })}
-                >
-                  ↻
-                </button>
+                {pickFile(
+                  `retake-${image.id}`,
+                  t("images.retake"),
+                  image.role,
+                  image.id,
+                  "icon",
+                  "⟳",
+                )}
                 <a
                   className="icon"
                   title={t("images.original")}
@@ -314,13 +318,27 @@ export default function ItemEdit() {
                   title={t("action.delete")}
                   aria-label={t("action.delete")}
                   onClick={() =>
-                    window.confirm(t("action.confirmDelete")) &&
-                    imageAction.mutate({ action: "delete", imageId: image.id })
+                    window.confirm(t("action.confirmDelete")) && imageAction.mutate(image.id)
                   }
                 >
                   ×
                 </button>
               </div>
+            </figcaption>
+          </figure>
+        ))}
+        {missingRoles.map((role) => (
+          <figure key={role}>
+            {pickFile(
+              `add-${role}`,
+              t("images.addPhoto"),
+              role,
+              undefined,
+              "thumb-empty",
+              <span>＋</span>,
+            )}
+            <figcaption>
+              <span className="muted small">{t(`images.role.${role}` as TranslationKey)}</span>
             </figcaption>
           </figure>
         ))}
@@ -335,7 +353,9 @@ export default function ItemEdit() {
             e.target.value = "";
           }}
         />
-        {upload.isPending && <span className="muted small">{t("images.uploading")}</span>}
+        {(upload.isPending || retake.isPending) && (
+          <span className="muted small">{t("images.uploading")}</span>
+        )}
       </div>
       <div className="row" style={{ marginTop: "0.5rem" }}>
         <input
@@ -392,21 +412,6 @@ export default function ItemEdit() {
       {error && <p className="error">{error}</p>}
 
       {photosCard}
-
-      {item && item.warnings.length > 0 && (
-        <div className="card small muted">
-          {item.warnings.map((warning) => (
-            <div key={warning}>⚠ {t(`warning.${warning}` as TranslationKey)}</div>
-          ))}
-        </div>
-      )}
-
-      {suggestions.length > 0 && (
-        <SuggestionList
-          suggestions={suggestions}
-          onAccept={(field, value) => draft.set(field, value)}
-        />
-      )}
 
       <div className="card">
         <h3>{t("collection.title")}</h3>

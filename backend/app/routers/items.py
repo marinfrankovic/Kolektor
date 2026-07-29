@@ -20,7 +20,7 @@ from app.models import (
     User,
 )
 from app.schemas import ItemCreate, ItemListRow, ItemOut, ItemPage, ItemUpdate
-from app.services import build_title, collect_warnings, compute_completeness
+from app.services import build_title, compute_completeness
 from app.storage import purge_item_dir
 
 router = APIRouter(prefix="/api/items", tags=["items"], dependencies=[Depends(current_user)])
@@ -98,9 +98,7 @@ def _finalise(db: Session, item: Item) -> Item:
 
 
 def _to_out(item: Item) -> dict[str, Any]:
-    data = ItemOut.model_validate(item).model_dump()
-    data["warnings"] = collect_warnings(item)
-    return data
+    return ItemOut.model_validate(item).model_dump()
 
 
 @router.get("", response_model=ItemPage)

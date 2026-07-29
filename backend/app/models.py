@@ -351,7 +351,6 @@ class ItemImage(Base):
     # Crop and enhancement parameters, kept so any derivative can be regenerated from the original.
     transform: Mapped[dict] = mapped_column(JSONType, default=dict, nullable=False)
     detection: Mapped[dict] = mapped_column(JSONType, default=dict, nullable=False)
-    suggestions: Mapped[list] = mapped_column(JSONType, default=list, nullable=False)
     error: Mapped[str | None] = mapped_column(Text)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, nullable=False)
