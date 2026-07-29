@@ -20,7 +20,7 @@ services:
       context: .
       args:
         WITH_REMBG: ${KOLEKTOR_WITH_REMBG:-false}
-    image: kolektor:latest
+    image: ${KOLEKTOR_IMAGE:-mfrankovic/kolektor:latest}
     container_name: kolektor-app
     restart: unless-stopped
     depends_on:
@@ -52,7 +52,7 @@ services:
       start_period: 40s
 
   worker:
-    image: kolektor:latest
+    image: ${KOLEKTOR_IMAGE:-mfrankovic/kolektor:latest}
     container_name: kolektor-worker
     restart: unless-stopped
     command: ["python", "-m", "app.worker"]

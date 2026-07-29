@@ -23,7 +23,7 @@ export default defineConfig({
     bundleWorldAtlas(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg"],
+      includeAssets: ["favicon.svg", "apple-touch-icon.png"],
       manifest: {
         name: "Kolektor",
         short_name: "Kolektor",
@@ -36,20 +36,12 @@ export default defineConfig({
           { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
           { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
           {
-            src: "/icon-512.png",
+            src: "/icon-maskable-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
           },
         ],
-        share_target: {
-          action: "/capture",
-          method: "POST",
-          enctype: "multipart/form-data",
-          params: {
-            files: [{ name: "file", accept: ["image/*"] }],
-          },
-        },
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,json}"],

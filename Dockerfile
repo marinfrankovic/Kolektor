@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine AS frontend
+# The bundle is plain static files, so building it on the host architecture avoids
+# running npm under QEMU when this image is cross-built for arm64.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /build
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install --no-audit --no-fund
@@ -9,6 +11,11 @@ RUN npm run build
 
 
 FROM python:3.12-slim AS runtime
+
+LABEL org.opencontainers.image.title="Kolektor" \
+      org.opencontainers.image.description="Self-hosted coin and banknote collection manager" \
+      org.opencontainers.image.source="https://github.com/marinfrankovic/Kolektor" \
+      org.opencontainers.image.licenses="MIT"
 
 ARG WITH_REMBG=false
 

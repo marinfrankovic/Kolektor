@@ -76,7 +76,10 @@ function Chrome({ showLogout }: { showLogout: boolean }) {
   return (
     <>
       <header className="topbar">
-        <span className="brand">{t("appName")}</span>
+        <span className="brand">
+          <img src="/favicon.svg" alt="" width={24} height={24} />
+          {t("appName")}
+        </span>
         <nav>
           {links.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.end}>

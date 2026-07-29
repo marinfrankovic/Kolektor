@@ -1,5 +1,9 @@
 # Kolektor
 
+[![CI](https://github.com/marinfrankovic/Kolektor/actions/workflows/ci.yml/badge.svg)](https://github.com/marinfrankovic/Kolektor/actions/workflows/ci.yml)
+[![Docker Hub](https://img.shields.io/docker/v/mfrankovic/kolektor?label=docker%20hub&sort=semver)](https://hub.docker.com/r/mfrankovic/kolektor)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Self-hosted manager for a coin **and paper money** collection. Runs in Docker, stores everything
 in PostgreSQL on your own machine, and works from a phone browser: photograph a coin or banknote
 and the server crops it and cleans it up for you.
@@ -28,14 +32,24 @@ and the server crops it and cleans it up for you.
 
 ## Quick start (LAN only, no domain, no TLS)
 
+The image is on Docker Hub as [`mfrankovic/kolektor`](https://hub.docker.com/r/mfrankovic/kolektor),
+built for `amd64` and `arm64`, so a Raspberry Pi works as well as a NUC.
+
 ```bash
 git clone https://github.com/marinfrankovic/Kolektor.git
 cd Kolektor
 cp .env.example .env
 # set POSTGRES_PASSWORD and KOLEKTOR_SECRET_KEY (openssl rand -hex 32)
 chmod 600 .env
-docker compose up -d --build
+docker compose up -d
 ```
+
+That pulls the published image. To build it yourself from the checkout instead, run
+`docker compose up -d --build`. To pin a release rather than follow `latest`, set
+`KOLEKTOR_IMAGE=mfrankovic/kolektor:1.0` in `.env`.
+
+Upgrading is `docker compose pull && docker compose up -d`. The database migrates itself on
+start; your photos and rows are untouched.
 
 Open `http://<host-ip>:8100`. That is the whole installation. A custom domain, HTTPS and a
 reverse proxy are all optional extras, covered further down.
@@ -114,6 +128,7 @@ Everything lives in `.env`. The defaults are chosen for a LAN install.
 | `POSTGRES_PASSWORD` | — | Required. Database password. |
 | `KOLEKTOR_SECRET_KEY` | — | Required. Signs session tokens. `openssl rand -hex 32`. |
 | `KOLEKTOR_HTTP_PORT` | `8100` | Host port. |
+| `KOLEKTOR_IMAGE` | `mfrankovic/kolektor:latest` | Image to run. Pin a version here, or point it at a local build. |
 | `KOLEKTOR_INITIAL_USER_EMAIL` / `_PASSWORD` | empty | Optional pre-provisioned account; skips the first-run screen. |
 | `KOLEKTOR_DEFAULT_LANGUAGE` | `en` | `en` or `hr`. Only the starting language; each user setting wins. |
 | `KOLEKTOR_PGDATA` | `./data/postgres` | Where the database files live on the host. |
@@ -268,3 +283,41 @@ to `UI_LANGUAGES` in `backend/app/models.py`.
   out of plain HTTP.
 - In **no login** mode there is no authentication at all. Do not expose that instance to the
   internet.
+
+---
+
+## Disclaimer
+
+Kolektor is a personal project, published in case it is useful to someone else. It comes with no
+warranty and no support commitment. Read the points below before you trust it with a collection
+you care about.
+
+- **Your data is yours to protect.** Kolektor stores everything on the machine you run it on. It
+  does not back anything up on its own. Set up `deploy/backup.sh` or your own job, and test a
+  restore at least once. A gzipped dump you have never restored is not a backup.
+- **Nothing is uploaded anywhere.** There is no telemetry, no analytics, no cloud account, no
+  phoning home. The only outbound request the app ever makes is fetching an image from a URL you
+  paste yourself.
+- **You are the administrator.** Keeping Docker, the host and your certificates current is your
+  job. Exposing an instance to the internet, especially one in **no login** mode, is a decision
+  only you can make.
+- **Automatic cropping and enhancement are approximations.** They can misjudge a photo. Originals
+  are never modified, so a bad result is always recoverable, but check the output rather than
+  assuming it.
+- **No valuations, no grading, no authentication.** Kolektor records what you type. It does not
+  price your collection, grade a coin, or tell you whether a piece is genuine. Grade and
+  certification fields are there to note what a third party already decided.
+- **Not affiliated** with any mint, grading service, auction house or catalogue publisher.
+  Catalogue reference fields exist so you can record numbers you looked up elsewhere.
+- The software is provided "as is". See [LICENSE](LICENSE) for the full text.
+
+---
+
+## License
+
+[MIT](LICENSE). Do what you like with it; keep the copyright notice.
+
+## Contributing
+
+Issues and pull requests are welcome, though this is a spare-time project and replies may be slow.
+Run the test suite and `ruff` before opening a pull request; CI will run them anyway.

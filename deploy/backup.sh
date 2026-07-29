@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Nightly database dump. Point BACKUP_DIR at whatever your existing backup job
 # already picks up, then add a cron entry such as:
-#   30 2 * * * /mnt/docker-storage/compose/kolektor/deploy/backup.sh
+#   30 2 * * * KOLEKTOR_BACKUP_DIR=/mnt/backup/kolektor /srv/kolektor/deploy/backup.sh
 set -euo pipefail
 
 STACK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-BACKUP_DIR="${KOLEKTOR_BACKUP_DIR:-/mnt/immich-backup/kolektor}"
+BACKUP_DIR="${KOLEKTOR_BACKUP_DIR:-/var/backups/kolektor}"
 KEEP_DAYS="${KOLEKTOR_BACKUP_KEEP_DAYS:-14}"
 
 mkdir -p "$BACKUP_DIR"

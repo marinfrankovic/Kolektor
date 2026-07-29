@@ -34,7 +34,7 @@ else
     docker compose up -d
 fi
 
-echo "Waiting for the app to report healthy…"
+echo "Waiting for the app to report healthy..."
 for _ in $(seq 1 60); do
     state="$(docker inspect -f '{{.State.Health.Status}}' kolektor-app 2>/dev/null || echo starting)"
     [[ "$state" == "healthy" ]] && break
