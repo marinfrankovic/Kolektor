@@ -1,6 +1,8 @@
 name: Publish to Docker Hub
 
 # Builds a multi-arch image (amd64 + arm64) and pushes it to Docker Hub.
+# Needs two repository secrets: DOCKERHUB_USERNAME and DOCKERHUB_TOKEN, the second
+# an access token with repo:admin so the description sync at the end can run too.
 # Triggers:
 #   - push to main                    -> publishes latest + main-<sha>
 #   - pushing a semver tag like v1.0.0 -> publishes versioned + latest tags
@@ -56,6 +58,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -67,5 +70,5 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ${{ env.IMAGE }}
-          short-description: "Self-hosted coin and banknote collection manager with auto-crop, a world map and a phone-friendly PWA"
-          readme-filepath: ./README.md
+          short-description: "Self-hosted coin and banknote collection manager with auto-crop, a world map and a PWA"
+          readme-filepath: ./DOCKERHUB.md
