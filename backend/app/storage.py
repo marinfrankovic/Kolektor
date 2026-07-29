@@ -65,7 +65,9 @@ def purge_item_dir(item_id: uuid.UUID) -> None:
 def resolve(rel_path: str) -> Path:
     """Reject anything that escapes MEDIA_ROOT, including via .. or absolute paths."""
     root = media_root()
-    candidate = (root / rel_path).resolve()
+    # POSIX treats a backslash as an ordinary filename character, so a Windows-style
+    # ..\..\ payload would slip past the check on Linux, which is where this runs.
+    candidate = (root / rel_path.replace("\\", "/")).resolve()
     if not candidate.is_relative_to(root):
         raise ValueError("path escapes media root")
     return candidate
