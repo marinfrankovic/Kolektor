@@ -8,10 +8,36 @@
   --muted: #92a1b3;
   --accent: #d8a657;
   --accent-soft: #3b3020;
+  --on-accent: #1a1204;
   --danger: #e5484d;
   --ok: #46a758;
+  --image-bg: #0d1116;
+  --tooltip-bg: #000c;
+  --map-bg: #151d26;
+  --map-empty: #26303c;
+  --map-line: #12181f;
   --radius: 10px;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f2ee;
+  --panel: #ffffff;
+  --panel-2: #eceae4;
+  --line: #d6d2c8;
+  --text: #23282e;
+  --muted: #6a7280;
+  --accent: #a3762a;
+  --accent-soft: #f3e6cb;
+  --on-accent: #fffaf0;
+  --danger: #c62a2f;
+  --ok: #2f7a3d;
+  --image-bg: #e7e4dc;
+  --tooltip-bg: #23282eee;
+  --map-bg: #e7e4dc;
+  --map-empty: #cdc9bf;
+  --map-line: #f4f2ee;
 }
 
 * {
@@ -251,7 +277,7 @@ button:disabled {
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #1a1204;
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -385,13 +411,68 @@ button.ghost {
   width: 100%;
   aspect-ratio: 1;
   object-fit: contain;
-  background: #0d1116;
+  background: var(--image-bg);
   display: block;
 }
 
 .thumbs figcaption {
   padding: 0.35rem 0.4rem;
   font-size: 0.75rem;
+}
+
+/* --- add item wizard ------------------------------------------------ */
+
+.steps {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.steps li {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.steps li.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.steps li.done {
+  color: var(--text);
+}
+
+.photo-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.photo-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.photo-frame {
+  aspect-ratio: 1;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--image-bg);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* --- map and stats -------------------------------------------------- */
@@ -452,7 +533,7 @@ button.ghost {
 .tooltip {
   position: fixed;
   pointer-events: none;
-  background: #000c;
+  background: var(--tooltip-bg);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.3rem 0.5rem;

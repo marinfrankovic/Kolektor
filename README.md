@@ -6,12 +6,16 @@ the server crops it, cleans it up, reads what text it can, and suggests fields y
 
 - Coins and banknotes are first-class, each with its own field set (weight, diameter, edge, mint
   vs Pick number, serial, signatures, watermark, security thread, printer).
+- Adding an item takes two steps: front and back photo, then five fields. Everything else is
+  optional and can be filled in later on the item page.
+- Photos come from the camera, a file on your computer, or a link you paste.
 - Photos are auto-cropped, deskewed and enhanced. The original file is never modified.
 - OCR proposes year, denomination, currency and serial numbers. Nothing is written without you.
 - A world map shows which countries you already cover, including historical states mapped to their
   present-day successor.
 - Installable as a PWA. No Android app to sideload.
-- Interface in **English or Croatian**, switchable at any time.
+- Interface in **English or Croatian**, switchable at any time. Light, dark or system theme.
+- Dates are shown and typed as `dd/mm/yyyy`.
 - Single user by design. If another person needs their own collection, run a second container.
 
 ---
@@ -52,16 +56,23 @@ start. The account is created in password mode and the wizard never appears.
 
 ---
 
-## Using it from a phone
+## Adding an item
 
-1. Open the app in the phone browser and choose **Add to home screen**. It installs as a PWA.
-2. Tap **Add photo**, pick the item (or "new item") and the side, then shoot.
-3. A blur check runs on the phone before anything is uploaded; a soft photo is flagged so you can
-   retake it.
-4. Photos taken while offline are stored in the browser and uploaded when the connection returns.
-5. The server crops the coin or note out of the background, straightens it, adjusts white balance
-   and contrast, and generates thumbnail, preview and display sizes plus a perceptual hash.
-6. Any OCR guesses appear at the top of the item as suggestions. Accept the ones you want.
+The **＋** tab opens a two-step form.
+
+1. **Photos.** Every item carries at least two: obverse and reverse for a coin, face and back for
+   a note. Each slot takes a camera shot, a file from the computer, or a pasted image URL. A blur
+   check runs in the browser first, so a soft photo is flagged before it is uploaded.
+2. **Details.** Name, country, currency, nominal value. Year is there too but you can leave it
+   empty. Save, and the item opens with everything else ready to fill in whenever you feel like it.
+
+On a phone, open the app in the browser and choose **Add to home screen**; it installs as a PWA
+and the same form uses the camera directly. Photos taken while offline are stored in the browser
+and uploaded when the connection returns.
+
+The server crops the coin or note out of the background, straightens it, adjusts white balance and
+contrast, and generates thumbnail, preview and display sizes plus a perceptual hash. Any OCR
+guesses appear at the top of the item as suggestions. Accept the ones you want.
 
 Photographing tip: plain dark background, even light, fill the frame, hold the camera parallel to
 the piece.
@@ -139,13 +150,14 @@ gunzip -c kolektor-20260101-0230.sql.gz | docker exec -i kolektor-db psql -U kol
 ## Tests
 
 The suite covers services, the API, authentication and the first-run modes, imaging, OCR parsing,
-statistics, the worker, and a dedicated set of security tests (path traversal, upload sniffing,
-SQL injection, rate limiting, session handling, security headers).
+statistics, the worker, remote image fetching, and a dedicated set of security tests (path
+traversal, upload sniffing, SSRF, SQL injection, rate limiting, session handling, security
+headers).
 
 ```bash
 cd backend
 python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pytest              # 220 tests
+.venv/bin/pytest              # 239 tests
 .venv/bin/ruff check .
 .venv/bin/bandit -c pyproject.toml -r app
 .venv/bin/pip-audit -r requirements.txt
@@ -181,6 +193,7 @@ backend/app/
   main.py          FastAPI app, security headers, SPA fallback
   models.py        SQLAlchemy models (Postgres, SQLite-compatible for tests)
   schemas.py       Pydantic request/response models
+  fetching.py      Guarded download of images the user linked to
   seed.py          Countries, historical entities, optional first user
   worker.py        Polls the job table, processes images
   imaging/         detect, enhance, ocr, pipeline
@@ -188,7 +201,8 @@ backend/app/
 backend/tests/     pytest suite
 frontend/src/
   i18n/            English and Croatian dictionaries
-  pages/           Setup, Login, Collection, ItemEdit, Capture, MapView, Stats, Settings
+  lib/             date formatting, theme
+  pages/           Setup, Login, Collection, ItemNew, ItemEdit, MapView, Stats, Settings
 deploy/            optional nginx vhost, deploy and backup scripts
 ```
 
@@ -203,6 +217,9 @@ to `UI_LANGUAGES` in `backend/app/models.py`.
   in an `HttpOnly` cookie.
 - Failed logins are rate limited per IP.
 - Uploads are checked by magic bytes, not by file extension, and re-encoded before being served.
+- Images imported from a URL only reach public addresses: the scheme must be http or https, the
+  hostname is resolved and checked against private, loopback, link-local and multicast ranges on
+  every redirect hop, redirects stop at three, and the download has a timeout and a size cap.
 - EXIF, including GPS, is stripped from every derivative image.
 - HSTS is emitted only when you have actually terminated TLS, so a LAN install cannot lock itself
   out of plain HTTP.

@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { toDisplayDate } from "../lib/dates";
 import { dictionaries, type Language, type TranslationKey } from "./dictionaries";
 
 type Translate = (key: TranslationKey, vars?: Record<string, string | number>) => string;
@@ -54,8 +55,7 @@ export function I18nProvider({
         }
       },
       formatNumber: (value) => new Intl.NumberFormat(locale).format(value),
-      formatDate: (value) =>
-        new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value)),
+      formatDate: (value) => toDisplayDate(new Date(value).toISOString()),
     };
   }, [language]);
 

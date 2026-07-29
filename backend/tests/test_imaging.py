@@ -49,6 +49,14 @@ class TestDetection:
         assert cropped.shape[0] < image.shape[0]
         assert cropped.shape[1] < image.shape[1]
 
+    def test_apply_detection_keeps_a_margin_around_the_subject(self):
+        image = coin_photo(700)
+        detection = detect(image, "coin", allow_rembg=False)
+        assert detection.circle is not None
+        diameter = detection.circle[2] * 2
+        cropped = apply_detection(image, detection)
+        assert cropped.shape[1] > diameter * 1.1
+
     def test_apply_detection_is_a_no_op_without_a_detection(self):
         blank = np.full((300, 300, 3), 128, dtype=np.uint8)
         result = apply_detection(blank, detect(blank, "coin", allow_rembg=False))
@@ -200,8 +208,8 @@ class TestPipeline:
             run_ocr=False,
             manual_transform=manual,
         )
-        assert result["width"] <= 220
-        assert result["height"] <= 220
+        assert result["width"] <= 270
+        assert result["height"] <= 270
 
     def test_derivatives_carry_no_exif(self, tmp_path):
         source = tmp_path / "coin.jpg"

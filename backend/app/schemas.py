@@ -163,6 +163,12 @@ class ImageOut(ORMModel):
     created_at: datetime
 
 
+class ImageImport(BaseModel):
+    item_id: uuid.UUID
+    role: ImageRole = "other"
+    url: str = Field(min_length=8, max_length=2000)
+
+
 # --- items ------------------------------------------------------------------
 
 

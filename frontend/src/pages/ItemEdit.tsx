@@ -11,6 +11,7 @@ import {
   type Suggestion,
 } from "../api/client";
 import { useI18n, useT, type TranslationKey } from "../i18n";
+import { toDisplayDate, toIsoDate } from "../lib/dates";
 
 const KINDS: Kind[] = ["coin", "banknote", "token", "set", "other"];
 const STATUSES = [
@@ -129,8 +130,7 @@ function SuggestionList({
 }
 
 export default function ItemEdit() {
-  const { id } = useParams();
-  const isNew = !id;
+  const { id = "" } = useParams();
   const t = useT();
   const { countryName } = useI18n();
   const navigate = useNavigate();
@@ -138,8 +138,7 @@ export default function ItemEdit() {
 
   const itemQuery = useQuery({
     queryKey: ["item", id],
-    queryFn: () => api.getItem(id!),
-    enabled: !isNew,
+    queryFn: () => api.getItem(id),
     refetchInterval: (query) =>
       query.state.data?.images.some((image) => image.status === "pending" || image.status === "processing")
         ? 2500
@@ -160,6 +159,7 @@ export default function ItemEdit() {
 
   const draft = useDraft(item, kind);
   const [catalogRefs, setCatalogRefs] = useState<CatalogRef[]>([]);
+  const [photoUrl, setPhotoUrl] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -169,21 +169,20 @@ export default function ItemEdit() {
   const save = useMutation({
     mutationFn: async () => {
       const body = { ...draft.payload(), catalog_refs: catalogRefs.map((r) => ({ catalog: r.catalog, number: r.number })) };
-      return isNew ? api.createItem(body) : api.updateItem(id!, body);
+      return api.updateItem(id, body);
     },
-    onSuccess: (saved) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["items"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["item", id] });
       draft.reset();
-      if (isNew) navigate(`/items/${saved.id}`, { replace: true });
-      else queryClient.invalidateQueries({ queryKey: ["item", id] });
     },
     onError: (err) =>
       setError(err instanceof ApiError ? String(err.detail ?? err.message) : t("common.error")),
   });
 
   const remove = useMutation({
-    mutationFn: () => api.deleteItem(id!),
+    mutationFn: () => api.deleteItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["items"] });
       navigate("/");
@@ -192,8 +191,19 @@ export default function ItemEdit() {
 
   const upload = useMutation({
     mutationFn: async ({ file, role }: { file: File; role: ImageRole }) =>
-      api.uploadImage(id!, role, file, file.name),
+      api.uploadImage(id, role, file, file.name),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["item", id] }),
+  });
+
+  const importFromUrl = useMutation({
+    mutationFn: async ({ url, role }: { url: string; role: ImageRole }) =>
+      api.importImage(id, role, url),
+    onSuccess: () => {
+      setPhotoUrl("");
+      queryClient.invalidateQueries({ queryKey: ["item", id] });
+    },
+    onError: (err) =>
+      setError(err instanceof ApiError ? String(err.detail ?? err.message) : t("images.linkFailed")),
   });
 
   const imageAction = useMutation({
@@ -209,7 +219,7 @@ export default function ItemEdit() {
     [item],
   );
 
-  if (!isNew && itemQuery.isPending) return <p className="muted">{t("common.loading")}</p>;
+  if (itemQuery.isPending) return <p className="muted">{t("common.loading")}</p>;
 
   const text = (path: string, label: string, type = "text") => (
     <Field label={label}>
@@ -221,22 +231,37 @@ export default function ItemEdit() {
     </Field>
   );
 
+  const dateField = (path: string, label: string) => (
+    <Field label={`${label} (dd/mm/yyyy)`}>
+      <input
+        inputMode="numeric"
+        placeholder="dd/mm/yyyy"
+        defaultValue={toDisplayDate(String(draft.value(path, "") ?? ""))}
+        onBlur={(e) => {
+          const typed = e.target.value.trim();
+          const iso = typed ? toIsoDate(typed) : "";
+          if (iso === null) return;
+          draft.set(path, iso);
+          e.target.value = toDisplayDate(iso);
+        }}
+      />
+    </Field>
+  );
+
   return (
     <div className="stack">
       <div className="spread">
-        <h1>{isNew ? t("collection.new") : item?.title}</h1>
+        <h1>{item?.title}</h1>
         <div className="row">
           <button className="ghost" onClick={() => navigate("/")}>
             {t("action.back")}
           </button>
-          {!isNew && (
-            <button
-              className="danger"
-              onClick={() => window.confirm(t("action.confirmDelete")) && remove.mutate()}
-            >
-              {t("action.delete")}
-            </button>
-          )}
+          <button
+            className="danger"
+            onClick={() => window.confirm(t("action.confirmDelete")) && remove.mutate()}
+          >
+            {t("action.delete")}
+          </button>
           <button className="primary" disabled={save.isPending} onClick={() => save.mutate()}>
             {save.isPending ? t("action.saving") : t("action.save")}
           </button>
@@ -405,7 +430,7 @@ export default function ItemEdit() {
       <div className="card">
         <h3>{t("money.acquisition")}</h3>
         <div className="grid">
-          {text("acquisition.date", t("money.date"), "date")}
+          {dateField("acquisition.date", t("money.date"))}
           {text("acquisition.price", t("money.price"), "number")}
           {text("acquisition.currency", t("money.currency"))}
           {text("acquisition.counterparty", t("money.counterparty"))}
@@ -413,7 +438,7 @@ export default function ItemEdit() {
         </div>
         <h3 style={{ marginTop: "1rem" }}>{t("money.disposal")}</h3>
         <div className="grid">
-          {text("disposal.date", t("money.date"), "date")}
+          {dateField("disposal.date", t("money.date"))}
           {text("disposal.price", t("money.price"), "number")}
           {text("disposal.currency", t("money.currency"))}
           {text("disposal.counterparty", t("money.counterparty"))}
@@ -462,21 +487,40 @@ export default function ItemEdit() {
         </div>
       </div>
 
-      {!isNew && (
-        <div className="card">
-          <h3>{t("images.section")}</h3>
-          <div className="row">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) upload.mutate({ file, role: roles[0] });
-                e.target.value = "";
-              }}
-            />
-            {upload.isPending && <span className="muted small">{t("capture.uploading")}</span>}
-          </div>
+      <div className="card">
+        <h3>{t("images.section")}</h3>
+        <div className="row">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) upload.mutate({ file, role: roles[0] });
+              e.target.value = "";
+            }}
+          />
+          {upload.isPending && <span className="muted small">{t("images.uploading")}</span>}
+        </div>
+        <div className="row" style={{ marginTop: "0.5rem" }}>
+          <input
+            style={{ flex: 1 }}
+            type="url"
+            inputMode="url"
+            placeholder={t("images.urlPlaceholder")}
+            value={photoUrl}
+            onChange={(e) => setPhotoUrl(e.target.value)}
+          />
+          <button
+            className="ghost small"
+            disabled={!photoUrl.trim() || importFromUrl.isPending}
+            onClick={() => {
+              setError("");
+              importFromUrl.mutate({ url: photoUrl.trim(), role: roles[0] });
+            }}
+          >
+            {importFromUrl.isPending ? t("images.uploading") : t("images.addLink")}
+          </button>
+        </div>
 
           <div className="thumbs" style={{ marginTop: "0.75rem" }}>
             {(item?.images ?? []).map((image) => (
@@ -532,8 +576,7 @@ export default function ItemEdit() {
               </figure>
             ))}
           </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

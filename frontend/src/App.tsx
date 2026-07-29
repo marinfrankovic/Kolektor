@@ -1,11 +1,13 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { api } from "./api/client";
 import { useRefreshSession, useSession } from "./hooks/useSession";
 import { I18nProvider, useT } from "./i18n";
-import Capture from "./pages/Capture";
+import { listQueue, removeFromQueue } from "./lib/uploadQueue";
 import Collection from "./pages/Collection";
 import ItemEdit from "./pages/ItemEdit";
+import ItemNew from "./pages/ItemNew";
 import Login from "./pages/Login";
 import MapView from "./pages/MapView";
 import Settings from "./pages/Settings";
@@ -27,15 +29,40 @@ function useOnline() {
   return online;
 }
 
+/** Sends whatever was photographed while the phone had no connection. */
+function useUploadDrain() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const drain = async () => {
+      let sent = false;
+      for (const entry of await listQueue()) {
+        try {
+          await api.uploadImage(entry.itemId, entry.role, entry.blob, entry.filename);
+          await removeFromQueue(entry.id);
+          sent = true;
+        } catch {
+          break;
+        }
+      }
+      if (sent) queryClient.invalidateQueries({ queryKey: ["items"] });
+    };
+
+    if (navigator.onLine) drain();
+    window.addEventListener("online", drain);
+    return () => window.removeEventListener("online", drain);
+  }, [queryClient]);
+}
+
 function Chrome({ showLogout }: { showLogout: boolean }) {
   const t = useT();
   const refresh = useRefreshSession();
   const online = useOnline();
   const location = useLocation();
+  useUploadDrain();
 
   const links = [
     { to: "/", label: t("nav.collection"), icon: "▣", end: true },
-    { to: "/capture", label: t("nav.capture"), icon: "＋" },
+    { to: "/items/new", label: t("nav.add"), icon: "＋" },
     { to: "/map", label: t("nav.map"), icon: "◍" },
     { to: "/stats", label: t("nav.stats"), icon: "▤" },
     { to: "/settings", label: t("nav.settings"), icon: "⚙" },
@@ -126,9 +153,8 @@ export default function App() {
         <main>
           <Routes>
             <Route path="/" element={<Collection />} />
-            <Route path="/items/new" element={<ItemEdit />} />
+            <Route path="/items/new" element={<ItemNew />} />
             <Route path="/items/:id" element={<ItemEdit />} />
-            <Route path="/capture" element={<Capture />} />
             <Route path="/map" element={<MapView />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/settings" element={<Settings />} />

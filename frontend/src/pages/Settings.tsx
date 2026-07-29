@@ -3,6 +3,7 @@ import { useState } from "react";
 import { api, ApiError, type AuthMode } from "../api/client";
 import { storeLanguage, useRefreshSession, useSession } from "../hooks/useSession";
 import { useT } from "../i18n";
+import { useTheme, type Theme } from "../lib/theme";
 import type { Language } from "../i18n/dictionaries";
 
 export default function Settings() {
@@ -10,6 +11,7 @@ export default function Settings() {
   const refresh = useRefreshSession();
   const { data: session } = useSession();
   const config = useQuery({ queryKey: ["config"], queryFn: api.config, staleTime: Infinity });
+  const [theme, setTheme] = useTheme();
 
   const [displayName, setDisplayName] = useState(session?.user?.display_name ?? "");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -91,6 +93,19 @@ export default function Settings() {
           <option value="en">{t("settings.language.en")}</option>
           <option value="hr">{t("settings.language.hr")}</option>
         </select>
+
+        <div>
+          <label htmlFor="s-theme">{t("settings.theme")}</label>
+          <select
+            id="s-theme"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as Theme)}
+          >
+            <option value="system">{t("settings.theme.system")}</option>
+            <option value="light">{t("settings.theme.light")}</option>
+            <option value="dark">{t("settings.theme.dark")}</option>
+          </select>
+        </div>
 
         <div>
           <label htmlFor="s-name">{t("settings.displayName")}</label>

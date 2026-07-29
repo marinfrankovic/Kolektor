@@ -158,7 +158,13 @@ def detect(image: np.ndarray, kind: str, allow_rembg: bool = False) -> Detection
     return candidate
 
 
-def apply_detection(image: np.ndarray, detection: Detection, padding: float = 0.04) -> np.ndarray:
+# Detection tends to land just inside the subject, so the crop keeps a margin around it.
+DEFAULT_PADDING = 0.15
+
+
+def apply_detection(
+    image: np.ndarray, detection: Detection, padding: float = DEFAULT_PADDING
+) -> np.ndarray:
     h, w = image.shape[:2]
 
     if detection.shape == "circle" and detection.circle:

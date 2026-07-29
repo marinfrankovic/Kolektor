@@ -11,13 +11,21 @@ from sqlalchemy.orm import Session
 from app.config import Settings, get_settings
 from app.db import get_db
 from app.deps import current_user
+from app.fetching import FetchError, fetch_image
 from app.models import IMAGE_ROLES, Item, ItemImage, Job
-from app.schemas import ImageOut
+from app.schemas import ImageImport, ImageOut
 from app.storage import ALLOWED_SUFFIX, item_dir, relative, resolve, sha256_bytes, sniff_mime
 
 router = APIRouter(prefix="/api/images", tags=["images"], dependencies=[Depends(current_user)])
 
 VARIANTS = {"thumb": "thumb_path", "preview": "preview_path", "display": "display_path"}
+SUFFIX_FOR_MIME = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/heic": ".heic",
+    "image/tiff": ".tif",
+}
 
 # Spelled out because Starlette renamed its constant and deprecated the old name.
 HTTP_422 = 422
@@ -30,37 +38,22 @@ def _get_image(db: Session, image_id: uuid.UUID) -> ItemImage:
     return image
 
 
-@router.post("", response_model=ImageOut, status_code=status.HTTP_201_CREATED)
-async def upload_image(
-    item_id: uuid.UUID = Form(...),
-    role: str = Form("other"),
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    settings: Settings = Depends(get_settings),
-) -> ItemImage:
+def _checked_item(db: Session, item_id: uuid.UUID, role: str) -> Item:
     item = db.get(Item, item_id)
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "item not found")
     if role not in IMAGE_ROLES:
         raise HTTPException(HTTP_422, "unknown image role")
+    return item
 
-    suffix = Path(file.filename or "").suffix.lower()
-    if suffix not in ALLOWED_SUFFIX:
-        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "unsupported file type")
 
-    data = await file.read(settings.max_upload_bytes + 1)
-    if len(data) > settings.max_upload_bytes:
-        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "file too large")
-    if not data:
-        raise HTTPException(HTTP_422, "empty file")
-
+def _store(db: Session, item_id: uuid.UUID, role: str, data: bytes, suffix: str) -> ItemImage:
     mime = sniff_mime(data)
     if mime is None:
         raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "file content is not an image")
 
     image_id = uuid.uuid4()
-    target_dir = item_dir(item_id)
-    original = target_dir / f"{image_id}_original{suffix}"
+    original = item_dir(item_id) / f"{image_id}_original{suffix}"
     original.write_bytes(data)
 
     next_sort = db.scalar(
@@ -83,6 +76,50 @@ async def upload_image(
     db.commit()
     db.refresh(image)
     return image
+
+
+@router.post("", response_model=ImageOut, status_code=status.HTTP_201_CREATED)
+async def upload_image(
+    item_id: uuid.UUID = Form(...),
+    role: str = Form("other"),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ItemImage:
+    _checked_item(db, item_id, role)
+
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in ALLOWED_SUFFIX:
+        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "unsupported file type")
+
+    data = await file.read(settings.max_upload_bytes + 1)
+    if len(data) > settings.max_upload_bytes:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "file too large")
+    if not data:
+        raise HTTPException(HTTP_422, "empty file")
+
+    return _store(db, item_id, role, data, suffix)
+
+
+@router.post("/from-url", response_model=ImageOut, status_code=status.HTTP_201_CREATED)
+def import_image(
+    payload: ImageImport,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> ItemImage:
+    """Pull a picture the user linked to instead of asking them to download it first."""
+    _checked_item(db, payload.item_id, payload.role)
+
+    try:
+        data = fetch_image(payload.url, settings.max_upload_bytes)
+    except FetchError as err:
+        raise HTTPException(HTTP_422, str(err)) from None
+
+    mime = sniff_mime(data)
+    if mime is None:
+        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "the link is not an image")
+
+    return _store(db, payload.item_id, payload.role, data, SUFFIX_FOR_MIME[mime])
 
 
 @router.get("/{image_id}/original")

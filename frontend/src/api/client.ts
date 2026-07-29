@@ -258,6 +258,11 @@ export const api = {
   },
   updateImage: (id: string, body: { role?: ImageRole; sort?: number }) =>
     request<ItemImage>(`/api/images/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  importImage: (itemId: string, role: ImageRole, url: string) =>
+    request<ItemImage>("/api/images/from-url", {
+      method: "POST",
+      body: JSON.stringify({ item_id: itemId, role, url }),
+    }),
   reprocessImage: (id: string, body: Record<string, unknown> = {}) =>
     request<ItemImage>(`/api/images/${id}/reprocess`, {
       method: "POST",

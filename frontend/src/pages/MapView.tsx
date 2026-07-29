@@ -18,7 +18,7 @@ const STEPS = [
 ];
 
 function colourFor(total: number): string {
-  if (!total) return "#26303c";
+  if (!total) return "var(--map-empty)";
   let colour = STEPS[0].colour;
   for (const step of STEPS) if (total >= step.min) colour = step.colour;
   return colour;
@@ -59,7 +59,7 @@ export default function MapView() {
           projectionConfig={{ scale: 165 }}
           width={900}
           height={460}
-          style={{ background: "#151d26" }}
+          style={{ background: "var(--map-bg)" }}
         >
           <ZoomableGroup center={[10, 15]} maxZoom={8}>
             <Geographies geography={GEO_URL}>
@@ -72,7 +72,7 @@ export default function MapView() {
                       key={geo.rsmKey}
                       geography={geo}
                       fill={colourFor(total)}
-                      stroke="#12181f"
+                      stroke="var(--map-line)"
                       strokeWidth={0.4}
                       onMouseMove={(event) =>
                         setHover({
@@ -99,7 +99,7 @@ export default function MapView() {
 
       <div className="legend">
         <span>{t("map.legend")}</span>
-        <i style={{ background: "#26303c" }} /> 0
+        <i style={{ background: "var(--map-empty)" }} /> 0
         {STEPS.map((step) => (
           <span key={step.min} className="row" style={{ gap: "0.25rem" }}>
             <i style={{ background: step.colour }} /> {step.min}+
