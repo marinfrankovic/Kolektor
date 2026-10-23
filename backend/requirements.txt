@@ -8,6 +8,6 @@ pydantic-settings==2.14.2
 email-validator==2.2.0
 python-multipart==0.0.32
 argon2-cffi==23.1.0
-pillow==12.3.0
+pillow==13.0.0
 numpy==2.5.1
 opencv-python-headless==5.0.0.93
